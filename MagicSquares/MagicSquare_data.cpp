@@ -326,3 +326,20 @@ void MagicSquare_data::initializeSquares(std::pair<mpz_int, mpz_int>* square_arr
         square_arr[i].first = sqrt(square_arr[i].second);
     }
 }
+
+MagicSquare_data::MagicSquare_data(
+    unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d,
+    unsigned long long e, unsigned long long f, unsigned long long g, unsigned long long h, unsigned long long i)
+{
+    square_arr[0] = std::make_pair(1, a);
+    square_arr[1] = std::make_pair(1, b);
+    square_arr[2] = std::make_pair(1, c);
+    square_arr[3] = std::make_pair(1, d);
+    square_arr[4] = std::make_pair(1, e);
+    square_arr[5] = std::make_pair(1, f);
+    square_arr[6] = std::make_pair(1, g);
+    square_arr[7] = std::make_pair(1, h);
+    square_arr[8] = std::make_pair(1, i);
+    initializeSquares(square_arr);
+}
+

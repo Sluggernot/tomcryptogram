@@ -77,3 +77,61 @@ Sqrt: 3906434696 Value: 15260232034112612416
 
 
 Processed magic square count: 396375
+
+Pattern of our starting magic square. S - Small, M - Medium, B - Big
+M B S   4 9 2
+S M B   3 5 7
+B S M   8 1 6
+
+B M S
+S M B
+B M S ?? Theoretical. The Left column would probably have to be the two lowest B and Middle or Lowest S?
+
+
+--------
+8 1 6
+3 5 7
+4 9 2 A regular magic square. All add up to 15.
+
+B S M    M S B  This is just transposed
+S M B    B M S
+M B S    S B M  Interesting pattern.
+
+4 3 8   8 3 4 Ok the swap on the right doesnt work, of course. Had to check
+9 5 1   1 5 9
+2 7 6   6 2 7
+So we conclude the diagonals still seem to be all Ms or SBM (all 3)
+It seems unlikely there is some MMS combo or something. If there were, there would be a BBS somewhere.
+If that were to happen it would most certainly be the Smallest of the smalls and smallest 2 of the 3 bigs.
+
+
+Sallows Square - Probably best known attempt. All conditions met except Up Left to Low Right. Wow.
+127 46  58  B S M
+2   113 94  S B M
+74  82  97  M S B
+
+16129	 2116	 3364	 	 - 21609
+4	     12769	 8836	 	 - 21609
+5476	 6724	 9409	 	 - 21609
+==================================================
+21609	 21609	 21609
+Diagonals:
+Upper Left to Low Right: 38307
+Bottom Left to Up Right: 21609
+Smallest: Left Center
+  Val: 4
+Largest:Left Top
+  Val: 16129
+Sum: 64827
+
+
+Ascending list:
+Sqrt: 2 Value: 4
+Sqrt: 46 Value: 2116
+Sqrt: 58 Value: 3364
+Sqrt: 74 Value: 5476
+Sqrt: 82 Value: 6724
+Sqrt: 94 Value: 8836
+Sqrt: 97 Value: 9409
+Sqrt: 113 Value: 12769
+Sqrt: 127 Value: 16129

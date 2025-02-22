@@ -18,13 +18,14 @@ int main() {
  * Pretty much zero, right? If the other 8 numbers are gigantic, they cant be 49 apart, right?
  */
 
-    MagicSquare_data data; //Initializes in constructor
+    //MagicSquare_data data;
+    MagicSquare_data data(127*127, 46*46, 58*58, 2*2, 113*113, 94*94, 74*74, 82*82, 97*97);
     mpz_int howManySquaresDidWeProcess = 0;
     // data.printMagicSquare_withSums(true);
     // data.printMagicSquareDetails();
 
 //    data.swapTwoIndices(0, 4);
-    data.swapTwoIndices(0, 3);
+//    data.swapTwoIndices(0, 3);
 
     //Get most common value from rows, cols, diags
     mpz_int commonSum = data.calculateMostCommonSum(false);

@@ -49,6 +49,9 @@ public:
         square_arr[8] = std::make_pair(1, 9899325106089297025ULL);
         initializeSquares(square_arr);
     }
+    MagicSquare_data(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d,
+        unsigned long long e, unsigned long long f, unsigned long long g, unsigned long long h, unsigned long long i);
+
     int getCurrentFocus() const {return current_focus;}
 
     void printMagicSquare() const;
