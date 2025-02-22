@@ -9,10 +9,27 @@
 
 using namespace boost::multiprecision;
 
+enum val_loc {
+    top_lft, top_cen, top_rgt,
+    cen_lft, cen_cen, cen_rgt,
+    bot_lft, bot_cen, bot_rgt,
+    LAST_VAL
+};
+
+enum sum_loc {
+    row_top, row_cen, row_bot,
+    col_lft, col_cen, col_rgt,
+    diag_ullr, diag_blur,
+    LAST_SUM
+};
+
 class MagicSquare_data {
 private:
-
+    //.first = base number .second = square of .first
     std::pair<mpz_int, mpz_int> square_arr[9];
+    mpz_int sums[8];//3 rows, 3 columns, Upleft to low right, bot left to upright
+    mpz_int most_common_sum = 0;
+    int current_focus = -1;
 
     //Helper func to get us so initialization
     void initializeSquares(std::pair<mpz_int, mpz_int>* square_arr);
@@ -32,23 +49,29 @@ public:
         square_arr[8] = std::make_pair(1, 9899325106089297025ULL);
         initializeSquares(square_arr);
     }
+    int getCurrentFocus() const {return current_focus;}
 
     void printMagicSquare() const;
     void printMagicSquare_withSums(const bool diags = true) const;
     void printMagicSquareDetails() const;
     char printLocation(const int index) const;
     bool isMagicSquare() const;
+    bool contains(mpz_int& value, const int excludeIndex = -1) const;
+    bool areUncommonSumsHigher() const;
+    int isThereACommonElementFromBadSums();
 
     //Probably not useful to arbitrarily pick the lowest value.
     void swapLowest(const int counter);
+    void swapTwoIndices(const int swap1, const int swap2);
     //Just finds the lowest of the 9 values and returns the index
     int getLowestValuesIndex() const;
 
     //Takes an index and increments or decrements by 1, by raising or lowering .first and then squaring it
     //Saves us from using sqrt, ever so far.
-    void incrementAValueAtIndex(const int index);
-    void decrementAValueAtIndex(const int index);
+    void incrementAValueAtIndex(const int index, bool whileNotInArray = true);
+    void decrementAValueAtIndex(const int index, bool whileNotInArray = true);
 
+    mpz_int calculateMostCommonSum(bool print);
 
 };
 

@@ -17,25 +17,40 @@ int main() {
  * What are the chances theres just like a 49 in the middle square of some stupidly large numbers?
  * Pretty much zero, right? If the other 8 numbers are gigantic, they cant be 49 apart, right?
  */
-//    someGMPexamples();
-    // std::vector<mpz_int> numbers;
 
     MagicSquare_data data; //Initializes in constructor
+    mpz_int howManySquaresDidWeProcess = 0;
+    // data.printMagicSquare_withSums(true);
+    // data.printMagicSquareDetails();
+
+//    data.swapTwoIndices(0, 4);
+    data.swapTwoIndices(0, 3);
+
+    //Get most common value from rows, cols, diags
+    mpz_int commonSum = data.calculateMostCommonSum(false);
+    //Are the other sums mostly higher or lower than the most common?
+    bool bIsHigher = data.areUncommonSumsHigher(); //No need to call this here. It's called from isThereACommonElementFromBadSums()
+    //Or, we find a row and column whose sums are both higher or lower than the common.
+    while (data.isThereACommonElementFromBadSums() != -1) //Checks if most other sums are higher or lower and sets current_focus if there is
+    {
+        ++howManySquaresDidWeProcess;
+        //Get the common element of the row and column and increment until the row or column meet or exceed the common
+        if (bIsHigher) //If higher, decrement
+            data.decrementAValueAtIndex(data.getCurrentFocus());
+        else
+            data.incrementAValueAtIndex(data.getCurrentFocus());
+        //Reassess
+        if (data.isMagicSquare())
+            return 1;//Go apeshit, at this time
+
+        data.calculateMostCommonSum(false);
+        bIsHigher = data.areUncommonSumsHigher();
+    }
 
     data.printMagicSquare_withSums(true);
     data.printMagicSquareDetails();
-    std::cout << "\n\n";
 
-    //getLowest value in the array and increment it
-    data.incrementAValueAtIndex(data.getLowestValuesIndex());
-
-    data.printMagicSquare_withSums(true);
-    data.printMagicSquareDetails();
-    std::cout << "\n\n";
-
-
-    // std::cout << "\n\nProbably didnt find the magic...\n\n" << std::endl;
-    // printMagicSquare(current_square);
+    std::cout << "\n\nProcessed magic square count: " << howManySquaresDidWeProcess << "\n\n" << std::endl;
 
     return 0;
 }

@@ -4,6 +4,7 @@
 
 #include "MagicSquare_data.h"
 
+#include <map>
 #include <set>
 
 void MagicSquare_data::printMagicSquare() const {
@@ -33,6 +34,8 @@ void MagicSquare_data::printMagicSquare_withSums(const bool diags) const {
 }
 
 char MagicSquare_data::printLocation(const int index) const {
+    if (index > 8)return ' ';
+
     if (index == 0 || index == 3 || index == 6) {
         std::cout << "Left ";
     }
@@ -112,7 +115,6 @@ bool MagicSquare_data::isMagicSquare() const {
             if (square_arr[i].second != square_arr[j].second) { return false; }
         }
     }
-
     //Add and check cols, rows, diags.
     const mpz_int row1 = square_arr[0].second + square_arr[1].second + square_arr[2].second;
     const mpz_int row2 = square_arr[3].second + square_arr[4].second + square_arr[5].second;
@@ -133,14 +135,95 @@ bool MagicSquare_data::isMagicSquare() const {
     const mpz_int dia2 = square_arr[2].second + square_arr[4].second + square_arr[6].second;
     if (dia1 != dia2) { return false; }
 
-    std::cout << "Perfect square found!" << std::endl;
+    std::cout << "Magic square of square of squares found!" << std::endl;
     printMagicSquare();
     return true;
 }
 
+bool MagicSquare_data::contains(mpz_int &value, const int excludeIndex) const {
+    for (int i = 0; i < LAST_VAL; ++i) {
+        if (i == excludeIndex) { continue; }
+        if (square_arr[i].second == value) { return true; }
+    }
+    return false;
+}
+
+bool MagicSquare_data::areUncommonSumsHigher() const {
+    int higher = 0;
+    int lower = 0;
+    for (const auto & i : square_arr) {
+        if (i.second > most_common_sum) {++higher;}
+        else if (i.second < most_common_sum) {++lower;}
+    }
+    return higher > lower;
+}
+
+int MagicSquare_data::isThereACommonElementFromBadSums() {
+    current_focus = -1; //reset focus
+
+    if (areUncommonSumsHigher()) {
+        //If top row and left column sums are greater than most_common
+        if (sums[row_top] > most_common_sum && sums[col_lft] > most_common_sum) {
+            //Upper left is one to work on
+            current_focus = top_lft;
+        }
+        if (sums[row_cen] > most_common_sum && sums[col_lft] > most_common_sum) {
+            current_focus = cen_lft;
+        }
+        if (sums[row_bot] > most_common_sum && sums[col_lft] > most_common_sum) {
+            current_focus = bot_lft;
+        }
+        if (sums[row_top] > most_common_sum && sums[col_cen] > most_common_sum) {
+            current_focus = top_cen;
+        }
+        if (sums[row_bot] > most_common_sum && sums[col_cen] > most_common_sum) {
+            current_focus = bot_cen;
+        }
+        if (sums[row_top] > most_common_sum && sums[col_rgt] > most_common_sum) {
+            current_focus = top_rgt;
+        }
+        if (sums[row_cen] > most_common_sum && sums[col_rgt] > most_common_sum) {
+            current_focus = cen_rgt;
+        }
+        if (sums[row_bot] > most_common_sum && sums[col_rgt] > most_common_sum) {
+            current_focus = bot_rgt;
+        }
+    }
+    else {
+        if (sums[row_top] < most_common_sum && sums[col_lft] < most_common_sum) {
+            current_focus = top_lft;
+        }
+        if (sums[row_cen] < most_common_sum && sums[col_lft] < most_common_sum) {
+            current_focus = cen_lft;
+        }
+        if (sums[row_bot] < most_common_sum && sums[col_lft] < most_common_sum) {
+            current_focus = bot_lft;
+        }
+        if (sums[row_top] < most_common_sum && sums[col_cen] < most_common_sum) {
+            current_focus = top_cen;
+        }
+        if (sums[row_bot] < most_common_sum && sums[col_cen] < most_common_sum) {
+            current_focus = bot_cen;
+        }
+        if (sums[row_top] < most_common_sum && sums[col_rgt] < most_common_sum) {
+            current_focus = top_rgt;
+        }
+        if (sums[row_cen] < most_common_sum && sums[col_rgt] < most_common_sum) {
+            current_focus = cen_rgt;
+        }
+        if (sums[row_bot] < most_common_sum && sums[col_rgt] < most_common_sum) {
+            current_focus = bot_rgt;
+        }
+    }
+    return current_focus;
+}
+
 void MagicSquare_data::swapLowest(const int counter) {
-    int lowest = getLowestValuesIndex();
-    square_arr[lowest].second = counter * counter;
+    square_arr[getLowestValuesIndex()].second = counter * counter;
+}
+
+void MagicSquare_data::swapTwoIndices(const int swap1, const int swap2) {
+    std::swap(square_arr[swap1], square_arr[swap2]);
 }
 
 //Get the index into the array of the lowest value. Can use first or second.
@@ -154,14 +237,88 @@ int MagicSquare_data::getLowestValuesIndex() const {
     return lowest;
 }
 
-void MagicSquare_data::incrementAValueAtIndex(const int index) {
+void MagicSquare_data::incrementAValueAtIndex(const int index, bool whileNotInArray) {
+    if (index >= LAST_VAL) {std::cout << "INVALID INDEX!\n"; return;}
     ++square_arr[index].first;
     square_arr[index].second = square_arr[index].first * square_arr[index].first;
+
+    if (whileNotInArray) {
+        if (contains(square_arr[index].second, index)) {
+            incrementAValueAtIndex(index, whileNotInArray);
+        }
+    }
 }
 
-void MagicSquare_data::decrementAValueAtIndex(const int index) {
+void MagicSquare_data::decrementAValueAtIndex(const int index, bool whileNotInArray) {
+    if (index >= LAST_VAL) {std::cout << "INVALID INDEX!\n"; return;}
     --square_arr[index].first;
     square_arr[index].second = square_arr[index].first * square_arr[index].first;
+
+    if (whileNotInArray) {
+     if (contains(square_arr[index].second, index)) {
+        decrementAValueAtIndex(index, whileNotInArray);
+     }
+    }
+}
+
+mpz_int MagicSquare_data::calculateMostCommonSum(bool print = false) {
+    std::map<mpz_int, int> setOfSums;
+    //row 1 and init
+    mpz_int sum = square_arr[0].second + square_arr[1].second + square_arr[2].second;
+    setOfSums[sum] = 1;
+    sums[0] = sum;
+
+    sum = square_arr[3].second + square_arr[4].second + square_arr[5].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[1] = sum;
+
+    sum = square_arr[6].second + square_arr[7].second + square_arr[8].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[2] = sum;
+
+    //col 1
+    sum = square_arr[0].second + square_arr[3].second + square_arr[6].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[3] = sum;
+
+    sum = square_arr[1].second + square_arr[4].second + square_arr[7].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[4] = sum;
+
+    sum = square_arr[2].second + square_arr[5].second + square_arr[8].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[5] = sum;
+
+    //Diagonals
+    sum = square_arr[0].second + square_arr[4].second + square_arr[8].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[6] = sum;
+
+    sum = square_arr[2].second + square_arr[4].second + square_arr[6].second;
+    if (setOfSums.contains(sum)) setOfSums[sum]++;
+    else setOfSums[sum] = 1;
+    sums[7] = sum;
+
+    auto commonSum = setOfSums[sum];
+    for (const auto& commonSumIt : setOfSums) {
+        //if (print) std::cout << commonSumIt.first << " Count:" << commonSumIt.second << "\n";
+        if (commonSumIt.second > commonSum) {
+            sum = commonSumIt.first;
+            commonSum = commonSumIt.second;
+        }
+    }
+
+    if (print) {
+        std::cout <<"\nMost common sum: " << sum << " Count: " << setOfSums[sum] << "\n";
+    }
+    most_common_sum = sum;
+    return setOfSums[sum];
 }
 
 void MagicSquare_data::initializeSquares(std::pair<mpz_int, mpz_int>* square_arr) {
