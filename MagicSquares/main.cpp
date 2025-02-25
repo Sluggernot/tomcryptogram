@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <thread>
 
 #include "MagicSquare_data.h"
 #include "squares_container.h"
@@ -43,27 +44,51 @@ int main() {
     //Example: 10sq, 34sq, 50sq, 62sq, 70sq - Are all 5 successive numbers the same difference between them?
     //Or do 70 and 10 simply need to be the same to their neighbor?
 
+    //Thread stuff init
+    std::atomic<int> atomic_counter(3125);
+    constexpr int threadCount = 6;
+    std::thread worker_thread[threadCount];
+    squares_container worker_data[threadCount];
+
+    //Init the data
     constexpr int starterNum = 17;
     //Create a massive list of squares
-    squares_container squares(429496729);
-    unsigned int counter = 0;
-    //Iterate the squares, bounding by our pythagorean number, finding all equidistant values
-    for (unsigned int i = starterNum; i < 429496729; i+=starterNum)
-    {
-        squares.findAllEquidistantValues(i);
-        // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
-        if (squares.getEquidistantCount() > 1)
-        for (int eqs = 0; eqs < squares.getEquidistantCount()-1; ++eqs) {
-            if (squares.testEquidistantValsForSquares(i, eqs)) {
-                std::cout << "WOAH! CHECK OUT " << i << std::endl;
-                std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
-            }
-        }
-        counter++;
-        if (counter % 10000 == 0) {
-            std::cout << "Count: " << counter << " Num: " << i << "\n";
-        }
+    constexpr unsigned int howMany = 429496729;
+    squares_container squares(howMany);
+    //Set pointers to this massive data.
+    for (int i = 0; i < threadCount; i++) {
+        worker_data[i].setPointerToSquares(squares);
     }
+
+    auto lambda = [&atomic_counter](squares_container& data) {
+        ++atomic_counter;
+        while (atomic_counter < howMany) {
+            squares_container::GivenAnIndexTestValue(atomic_counter, data);
+            ++atomic_counter;
+            // if (atomic_counter % 100 == 0) {
+            //     std::cout << " Number: " << atomic_counter << "\n";
+            // }
+        }
+    };
+    for (int i = 0; i < threadCount; i++) {
+        worker_thread[i] = std::thread(lambda, std::ref(worker_data[i]));
+    }
+    for (int i = 0; i < threadCount; i++) {
+        worker_thread[i].join();
+    }
+
+    std::cout << "\nTotal count: " << atomic_counter << std::endl;
+    //Iterate the squares, bounding by our pythagorean number, finding all equidistant values
+
+    // int eqValCount = squares.findAllEquidistantValues(i);
+    // // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
+    // if (eqValCount > 1)
+    // for (int eqs = 0; eqs < squares.getEquidistantCount()-1; ++eqs) {
+    //     if (squares.testEquidistantValsForSquares(i, eqs)) {
+    //         std::cout << "WOAH! CHECK OUT " << i << std::endl;
+    //         std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
+    //     }
+    // }
 
 
     //OH SHIT! Try them as a cross as well.
