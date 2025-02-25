@@ -9,9 +9,9 @@
 squares_container::squares_container(unsigned int howMany)
 {
     for (int i = 0; i < howMany; i++) {
-        squares.emplace_back(i*i);
+        squares_vec.emplace_back(i*i);
     }
-    squares_ptr = &squares;
+    squares_ptr = &squares_vec;
 #if VERBOSE
     std::cout << "Biggest square: " << squares[howMany-1] << std::endl;
 #endif
@@ -51,8 +51,10 @@ bool squares_container::testEquidistantValsForSquares(const int center,  const i
     //Generating the magic square
     //https://www.youtube.com/watch?v=uz9jOIdhzs0 11:54
     // std::cout << "\n\n";
-    // if (equidistant_vals.size() > 12)
-    //     std::cout <<"XVal: " << center << " EquidistantCount: " << equidistant_vals.size() << "\n";
+#if VERBOSE
+    if (equidistant_vals.size() > 12)
+        std::cout <<"XVal: " << center << " EquidistantCount: " << equidistant_vals.size() << "\n";
+#endif
 
     for (int i = distance_idx; i < equidistant_vals.size()-1; i++) {
         const mpz_int& x = squares_ptr->at(center);
@@ -70,14 +72,16 @@ bool squares_container::testEquidistantValsForSquares(const int center,  const i
         //BottomCenter
         const mpz_int xMinusAMinusB = x - a - b;
 
-        if (xMinusAMinusB > 0) {
+        if (xMinusAMinusB > 0)
+        {
             int squaresTotal = 0;
             if(isASquare(xPlusAPlusB))squaresTotal++;
             if(isASquare(xPlusAMinusB))squaresTotal++;
             if(isASquare(xMinusAPlusB))squaresTotal++;
             if(isASquare(xMinusAMinusB))squaresTotal++;
 
-            if ( squaresTotal > 2) {
+            if ( squaresTotal > 1)
+            {
                 if (squaresTotal > 3)
                     std::cout << "THIS SHOULD BE A MAGIC SQUARE OF SQUARES!\n";
                 std::cout << "Equidistant index1: " << equidistant_vals.at(distance_idx).first << "\n";

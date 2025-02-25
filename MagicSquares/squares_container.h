@@ -13,7 +13,7 @@ using namespace boost::multiprecision;
 class squares_container {
 private:
 
-    std::vector<mpz_int> squares;
+    std::vector<mpz_int> squares_vec;
     std::vector<mpz_int>* squares_ptr = nullptr;
     std::vector<std::pair<int, int>> equidistant_vals;
     //std::vector<std::pair<int, int>> best_vals;
@@ -21,7 +21,7 @@ private:
 public:
     explicit squares_container(unsigned int howMany = 0);
 
-    std::vector<mpz_int>* getPointerToSquares() { return &squares; };
+    std::vector<mpz_int>* getPointerToSquares() { return &squares_vec; };
     void setPointerToSquares(squares_container& inContainer){squares_ptr = inContainer.getPointerToSquares();};
 
     int findSquareMatchingDistance(const int index, const mpz_int& distance) const;

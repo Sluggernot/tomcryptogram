@@ -45,13 +45,11 @@ int main() {
     //Or do 70 and 10 simply need to be the same to their neighbor?
 
     //Thread stuff init
-    std::atomic<int> atomic_counter(3125);
+    std::atomic<int> atomic_counter(30000); //<<--- THIS IS THE STARTING NUMBER
     constexpr int threadCount = 6;
     std::thread worker_thread[threadCount];
     squares_container worker_data[threadCount];
 
-    //Init the data
-    constexpr int starterNum = 17;
     //Create a massive list of squares
     constexpr unsigned int howMany = 429496729;
     squares_container squares(howMany);
@@ -59,15 +57,16 @@ int main() {
     for (int i = 0; i < threadCount; i++) {
         worker_data[i].setPointerToSquares(squares);
     }
+    std::cout << "Data built\n";
 
     auto lambda = [&atomic_counter](squares_container& data) {
         ++atomic_counter;
         while (atomic_counter < howMany) {
             squares_container::GivenAnIndexTestValue(atomic_counter, data);
             ++atomic_counter;
-            // if (atomic_counter % 100 == 0) {
-            //     std::cout << " Number: " << atomic_counter << "\n";
-            // }
+            if (atomic_counter % 100 == 0) {
+                std::cout << " Number: " << atomic_counter << "\n";
+            }
         }
     };
     for (int i = 0; i < threadCount; i++) {
