@@ -76,6 +76,10 @@ public:
 
     mpz_int calculateMostCommonSum(bool print);
 
+    void initializeAsAntiParkerSquare(unsigned long long initialVal, bool isAlreadySquared/* = false*/);
+    bool isIndexSquare(int index);//Saves the sqrt result into .first
+    static bool isNumberSquare(mpz_int& isSquare){mpz_int checker = sqrt(isSquare); return checker*checker == isSquare; };
+
 };
 
 

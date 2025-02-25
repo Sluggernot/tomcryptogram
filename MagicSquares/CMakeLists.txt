@@ -7,6 +7,8 @@ add_executable(MagicSquares
         main.cpp
         MagicSquare_data.h
         MagicSquare_data.cpp
+        squares_container.h
+        squares_container.cpp
 )
 
 find_package(Eigen3 CONFIG REQUIRED)
@@ -14,8 +16,9 @@ target_link_libraries(MagicSquares
         PRIVATE
         gmp
         gmpxx
-        tommath
-        Eigen3::Eigen)
+        #tommath
+        #Eigen3::Eigen
+)
 
 set(Boost_USE_STATIC_RPATH ON)
 find_path(Boost_Multiprecision_DIR /usr/include/boost)  # Replace with your Boost installation path

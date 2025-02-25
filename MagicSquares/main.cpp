@@ -1,22 +1,93 @@
 
 #include <iostream>
-#include "MagicSquare_data.h"
 
+#include "MagicSquare_data.h"
+#include "squares_container.h"
 
 //Contains the numbers for the near miss: https://www.youtube.com/watch?v=2Twa-z_WPE4&t=136s
 // void someGMPexamples();
 
+void Attempt1();
+
 int main() {
 
-/* To get a magic square:
- * Make a list of squares up to X.
- *
- * How do we want to get started filling the square?
- * Then how do we pick which number to change and what to?
- *
- * What are the chances theres just like a 49 in the middle square of some stupidly large numbers?
- * Pretty much zero, right? If the other 8 numbers are gigantic, they cant be 49 apart, right?
- */
+    //https://www.youtube.com/watch?v=uz9jOIdhzs0 - 11:54
+    // MagicSquare_data data(
+    //     2879*2879, 16492609, 2125*2125,
+    //     5992609, 3125*3125, 13538641,
+    //     3875*3875, 3038641, 3353*3353);
+    // MagicSquare_data data(
+    //     3508129, 10819825, 3024121,
+    //     5300017, 5784025, 6268033,
+    //     8543929, 748225, 8059921);
+    // data.printMagicSquare_withSums(true);
+    // data.printMagicSquareDetails();
+    // if (data.isMagicSquare()) std::cout << "OK, shit yourself" << std::endl;
+    // else std::cout << "Yeah, it's not a magic square of squares man.\n";
+    // return 0;
+
+    //https://www.youtube.com/watch?v=uz9jOIdhzs0 13:52 -
+    //If the Euler brick does exist, one of the 3 diagonals MUST be divisible by 17, 29 or 37...
+    //The formula for generating the anti-parkers would be like: generate a shitload of numbers, starting with a pythagorean prime squared
+    //Then pythagorean prime += that prime squared.
+    //Example: 17sq, (17+17)sq, and so on.
+    //Then find double equidistant values from a center value.
+    //Then do some adding and subtracting with those equidistant values and check if they're all square.
+    //
+    //   x-a  | x+a+b |  x-b
+    //  x+a-b |   x   | x-a+b
+    //   x+b  | x-a-b |  x+a
+    //Where x, a and b have some relation in distance from each other.
+    //It appears we must start at LEAST at 3125 squared.
+    //Ok, so she was hand calculating squares had 4 square numbers that had square numbers equidistant from that number.
+    //Example: 10sq, 34sq, 50sq, 62sq, 70sq - Are all 5 successive numbers the same difference between them?
+    //Or do 70 and 10 simply need to be the same to their neighbor?
+
+    constexpr int starterNum = 17;
+    //Create a massive list of squares
+    squares_container squares(429496729);
+    unsigned int counter = 0;
+    //Iterate the squares, bounding by our pythagorean number, finding all equidistant values
+    for (unsigned int i = starterNum; i < 429496729; i+=starterNum)
+    {
+        squares.findAllEquidistantValues(i);
+        // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
+        if (squares.getEquidistantCount() > 1)
+        for (int eqs = 0; eqs < squares.getEquidistantCount()-1; ++eqs) {
+            if (squares.testEquidistantValsForSquares(i, eqs)) {
+                std::cout << "WOAH! CHECK OUT " << i << std::endl;
+                std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
+            }
+        }
+        counter++;
+        if (counter % 10000 == 0) {
+            std::cout << "Count: " << counter << " Num: " << i << "\n";
+        }
+    }
+
+
+    //OH SHIT! Try them as a cross as well.
+
+    //Track the ones with more than 5 matching sums? Why did I say 5?
+
+
+    // Attempt1();
+
+
+    return 0;
+}
+
+void Attempt1()
+{
+    /* To get a magic square:
+     * Make a list of squares up to X.
+     *
+     * How do we want to get started filling the square?
+     * Then how do we pick which number to change and what to?
+     *
+     * What are the chances theres just like a 49 in the middle square of some stupidly large numbers?
+     * Pretty much zero, right? If the other 8 numbers are gigantic, they cant be 49 apart, right?
+     */
 
     //MagicSquare_data data;
     MagicSquare_data data(127*127, 46*46, 58*58, 2*2, 113*113, 94*94, 74*74, 82*82, 97*97);
@@ -24,8 +95,6 @@ int main() {
     // data.printMagicSquare_withSums(true);
     // data.printMagicSquareDetails();
 
-//    data.swapTwoIndices(0, 4);
-//    data.swapTwoIndices(0, 3);
 
     //Get most common value from rows, cols, diags
     mpz_int commonSum = data.calculateMostCommonSum(false);
@@ -42,7 +111,7 @@ int main() {
             data.incrementAValueAtIndex(data.getCurrentFocus());
         //Reassess
         if (data.isMagicSquare())
-            return 1;//Go apeshit, at this time
+            return;//Go apeshit, at this time
 
         data.calculateMostCommonSum(false);
         bIsHigher = data.areUncommonSumsHigher();
@@ -52,8 +121,6 @@ int main() {
     data.printMagicSquareDetails();
 
     std::cout << "\n\nProcessed magic square count: " << howManySquaresDidWeProcess << "\n\n" << std::endl;
-
-    return 0;
 }
 
 // void someGMPexamples() {

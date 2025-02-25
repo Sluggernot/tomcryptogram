@@ -135,3 +135,76 @@ Sqrt: 94 Value: 8836
 Sqrt: 97 Value: 9409
 Sqrt: 113 Value: 12769
 Sqrt: 127 Value: 16129
+
+
+--https://www.youtube.com/watch?v=uz9jOIdhzs0
+This is the smallest square she could make, where the bottom center integer was positive, I believe.
+
+8288641	    16492609	 4515625	 	 - 29296875
+5992609	    9765625	    13538641	 	 - 29296875
+15015625	 3038641	 11242609	 	 - 29296875
+==================================================
+29296875	 29296875	 29296875
+Diagonals:
+Upper Left to Low Right: 29296875
+Bottom Left to Up Right: 29296875
+Smallest: Center Bottom
+  Val: 3038641
+Largest:Center Top
+  Val: 16492609
+Sum: 87890625
+
+M  B  S
+S  M  B
+B  S  M
+
+Ascending list:
+Sqrt: 1743 Value: 3038641
+Sqrt: 2125 Value: 4515625
+Sqrt: 2447 Value: 5992609
+Sqrt: 2879 Value: 8288641
+Sqrt: 3125 Value: 9765625
+Sqrt: 3353 Value: 11242609
+Sqrt: 3679 Value: 13538641
+Sqrt: 3875 Value: 15015625
+Sqrt: 4061 Value: 16492609
+
+--------------------
+
+Equidistant index1: 1873
+Equidistant index2: 2839
+X: 5784025
+A: 2275896
+B: 2759904
+3508129 10819825 3024121
+5300017 5784025 6268033
+8543929 748225 8059921
+
+WOAH! CHECK OUT 2405
+Iteration: 2405 EQ Count: 13
+
+3508129	 10819825	 3024121	 	 - 17352075
+5300017	 5784025	 6268033	 	 - 17352075
+8543929	 748225	 8059921	 	 - 17352075
+==================================================
+17352075	 17352075	 17352075
+Diagonals:
+Upper Left to Low Right: 17352075
+Bottom Left to Up Right: 17352075
+Smallest: Center Bottom
+  Val: 748225
+Largest:Center Top
+  Val: 10819825
+Sum: 52056225
+
+
+Ascending list:
+Sqrt: 865 Value: 748225
+Sqrt: 1739 Value: 3024121
+Sqrt: 1873 Value: 3508129
+Sqrt: 2302 Value: 5300017
+Sqrt: 2405 Value: 5784025
+Sqrt: 2503 Value: 6268033
+Sqrt: 2839 Value: 8059921
+Sqrt: 2923 Value: 8543929
+Sqrt: 3289 Value: 10819825

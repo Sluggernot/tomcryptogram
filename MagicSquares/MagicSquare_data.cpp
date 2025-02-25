@@ -321,6 +321,19 @@ mpz_int MagicSquare_data::calculateMostCommonSum(bool print = false) {
     return setOfSums[sum];
 }
 
+//https://www.youtube.com/watch?v=uz9jOIdhzs0 11:15
+void MagicSquare_data::initializeAsAntiParkerSquare(unsigned long long initialVal, bool isAlreadySquared = false) {
+
+    //Could check if(isAlreadySquared) that sqrt(initialVal) * sqrt(initialVal) == initialVal;
+
+
+}
+
+bool MagicSquare_data::isIndexSquare(int index) {
+    square_arr[index].first = sqrt(square_arr[index].second);
+    return square_arr[index].second == square_arr[index].first * square_arr[index].first;
+}
+
 void MagicSquare_data::initializeSquares(std::pair<mpz_int, mpz_int>* square_arr) {
     for (int i = 0; i < 9; ++i) {
         square_arr[i].first = sqrt(square_arr[i].second);
