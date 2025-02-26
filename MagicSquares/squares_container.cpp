@@ -6,9 +6,9 @@
 
 #define VERBOSE 0
 
-squares_container::squares_container(unsigned int howMany)
+squares_container::squares_container(unsigned long long howMany)
 {
-    for (int i = 0; i < howMany; i++) {
+    for (unsigned long long i = 0; i < howMany; i++) {
         squares_vec.emplace_back(i*i);
     }
     squares_ptr = &squares_vec;
@@ -17,26 +17,26 @@ squares_container::squares_container(unsigned int howMany)
 #endif
 }
 
-int squares_container::findSquareMatchingDistance(const int index, const mpz_int& distance) const {
+unsigned int squares_container::findSquareMatchingDistance(const unsigned int index, const mpz_int& distance) const {
     // mpz_int subtraction = 0;
     const mpz_int& atIndex = squares_ptr->at(index);
-    for (int i = index-1; i >= 0; i--) {
+    for (unsigned int i = index-1; i >= 0; i--) {
         const mpz_int subtraction = atIndex - squares_ptr->at(i);
         if (subtraction == distance) {
             return i;
         }
-        if (subtraction > distance) { return -1; }
+        if (subtraction > distance || squares_ptr->at(i) == 0) { break; }
     }
     return -1;
 }
 
-int squares_container::findAllEquidistantValues(const int startingIndex) {
+int squares_container::findAllEquidistantValues(const unsigned int startingIndex) {
     equidistant_vals.clear();
 
     int index = 0;
     // mpz_int subtraction;
     const mpz_int subCheck = squares_ptr->at(startingIndex)-squares_ptr->at(0);
-    for (int i = startingIndex+1; i < squares_ptr->size(); i++) {
+    for (unsigned int i = startingIndex+1; i < squares_ptr->size(); i++) {
         const mpz_int subtraction = squares_ptr->at(i)-squares_ptr->at(startingIndex);
         if (subtraction > subCheck) {break;}
 
@@ -45,20 +45,18 @@ int squares_container::findAllEquidistantValues(const int startingIndex) {
 #if VERBOSE
             std::cout << "Equidistant values: " << index << ", " << i << "\n";
 #endif
-            equidistant_vals.emplace_back(std::pair<int,int>(index, i));
+            equidistant_vals.emplace_back(index, i);
         }
     }
     return equidistant_vals.size();
 }
 
-bool squares_container::testEquidistantValsForSquares(const int center,  const int distance_idx) const {
+bool squares_container::testEquidistantValsForSquares(const unsigned int center,  const unsigned int distance_idx) const {
     //Generating the magic square
     //https://www.youtube.com/watch?v=uz9jOIdhzs0 11:54
     // std::cout << "\n\n";
-    if (equidistant_vals.size() > 13)
-        std::cout <<"XVal: " << squares_ptr->at(center) << " EquidistantCount: " << equidistant_vals.size() << "\n";
 
-    for (int i = distance_idx; i < equidistant_vals.size()-1; i++) {
+    for (unsigned int i = distance_idx; i < equidistant_vals.size()-1; i++) {
         const mpz_int& x = squares_ptr->at(center);
 
         const mpz_int a = x - squares_ptr->at(equidistant_vals.at(distance_idx).first);
