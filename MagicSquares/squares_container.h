@@ -29,11 +29,11 @@ public:
     //Given a number, iterate the container, looking for double equidistant values
     //Dont forget to look for more values as we try out the ones we have
     int findAllEquidistantValues(const int startingIndex);
-    int getEquidistantCount() const{ return equidistant_vals.size(); };
+    // int getEquidistantCount() const{ return equidistant_vals.size(); };
 
     bool testEquidistantValsForSquares(const int center, const int distance_idx) const;
 
-    static bool isASquare(const mpz_int testMe);
+    static bool isASquare(const mpz_int& testMe);
 
     static void GivenAnIndexTestValue(unsigned int index, squares_container& data);
 
@@ -44,10 +44,10 @@ inline void squares_container::GivenAnIndexTestValue(unsigned int index, squares
     int eqValCount = data.findAllEquidistantValues(index);
     // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
     if (eqValCount > 1)
-        for (int eqs = 0; eqs < data.getEquidistantCount()-1; ++eqs) {
+        for (int eqs = 0; eqs < eqValCount-1; ++eqs) {
             if (data.testEquidistantValsForSquares(index, eqs)) {
                 std::cout << "WOAH! CHECK OUT " << index << std::endl;
-                std::cout << "Iteration: " << index << " EQ Count: " << data.getEquidistantCount() << "\n";
+                std::cout << "Iteration: " << index << " EQ Count: " << eqValCount << "\n";
             }
         }
 }
