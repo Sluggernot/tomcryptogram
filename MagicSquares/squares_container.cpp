@@ -80,10 +80,14 @@ bool squares_container::testEquidistantValsForSquares(const unsigned int center,
             if(isASquare(xMinusAPlusB))squaresTotal++;
             if(isASquare(xMinusAMinusB))squaresTotal++;
 
-            if ( squaresTotal >= 2)
+            if (squaresTotal >= 1)
             {
                 if (squaresTotal > 3)
                     std::cout << "THIS SHOULD BE A MAGIC SQUARE OF SQUARES!\n";
+                else {
+                    std::cout <<"Val: " << center <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
+                    return false;
+                }
                 std::cout << "Equidistant index1: " << equidistant_vals.at(distance_idx).first << "\n";
                 std::cout << "Equidistant index2: " << equidistant_vals.at(distance_idx).second << "\n";
                 std::cout << "X: " << x << "\n";

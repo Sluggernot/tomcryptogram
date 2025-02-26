@@ -45,7 +45,8 @@ int main() {
     //Or do 70 and 10 simply need to be the same to their neighbor?
 
     //Thread stuff init
-    std::atomic<int> atomic_counter(32700); //32700<<--- THIS IS THE STARTING NUMBER
+    ////32776 was roughly our problem number. Super fucking weird.
+    std::atomic<int> atomic_counter(64700-1); //<<--- THIS IS THE STARTING NUMBER - 64700 last recorded number we left off at
     constexpr int threadCount = 8;
     std::thread worker_thread[threadCount];
     squares_container worker_data[threadCount];
@@ -61,11 +62,11 @@ int main() {
 
     auto lambda = [&atomic_counter](squares_container& data) {
         ++atomic_counter;
-        while (atomic_counter < howMany)
+        while (atomic_counter < howMany/2)
         {
             squares_container::GivenAnIndexTestValue(atomic_counter, data);
             ++atomic_counter;
-            if (atomic_counter % 10 == 0)
+            if (atomic_counter % 100 == 0)
             {
                 std::cout << " Number: " << atomic_counter << "\n";
             }
