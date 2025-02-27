@@ -44,42 +44,12 @@ int main() {
     //Example: 10sq, 34sq, 50sq, 62sq, 70sq - Are all 5 successive numbers the same difference between them?
     //Or do 70 and 10 simply need to be the same to their neighbor?
 
-    //Thread stuff init
-    ////32776 was roughly our problem number. Super fucking weird.
-    std::atomic<int> atomic_counter(64700-1); //<<--- THIS IS THE STARTING NUMBER - 64700 last recorded number we left off at
-    constexpr int threadCount = 8;
-    std::thread worker_thread[threadCount];
-    squares_container worker_data[threadCount];
-
     //Create a massive list of squares
     constexpr unsigned int howMany = 429496729;
     squares_container squares(howMany);
-    //Set pointers to this massive data.
-    for (int i = 0; i < threadCount; i++) {
-        worker_data[i].setPointerToSquares(squares);
-    }
-    std::cout << "Data built\n";
+    squares.makeThreadsAndCalculate();
 
-    auto lambda = [&atomic_counter](squares_container& data) {
-        ++atomic_counter;
-        while (atomic_counter < howMany/2)
-        {
-            squares_container::GivenAnIndexTestValue(atomic_counter, data);
-            ++atomic_counter;
-            if (atomic_counter % 100 == 0)
-            {
-                std::cout << " Number: " << atomic_counter << "\n";
-            }
-        }
-    };
-    for (int i = 0; i < threadCount; i++) {
-        worker_thread[i] = std::thread(lambda, std::ref(worker_data[i]));
-    }
-    for (int i = 0; i < threadCount; i++) {
-        worker_thread[i].join();
-    }
 
-    std::cout << "\nTotal count: " << atomic_counter << std::endl;
     //Iterate the squares, bounding by our pythagorean number, finding all equidistant values
 
     // int eqValCount = squares.findAllEquidistantValues(i);
@@ -94,6 +64,7 @@ int main() {
 
 
     //OH SHIT! Try them as a cross as well.
+    //that doesnt make any sense with the formula given.
 
     //Track the ones with more than 5 matching sums? Why did I say 5?
 

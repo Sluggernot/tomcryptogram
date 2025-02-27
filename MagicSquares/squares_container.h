@@ -9,6 +9,7 @@
 
 using namespace boost::multiprecision;
 
+inline std::mutex gLocker;
 
 class squares_container {
 private:
@@ -16,7 +17,8 @@ private:
     std::vector<mpz_int> squares_vec;
     std::vector<mpz_int>* squares_ptr = nullptr;
     std::vector<std::pair<unsigned long long, unsigned long long>> equidistant_vals;
-    //std::vector<std::pair<int, int>> best_vals;
+
+    std::stringstream fileOutput;
 
 public:
     explicit squares_container(unsigned long long howMany = 0);
@@ -28,33 +30,29 @@ public:
     unsigned int findSquareMatchingDistance(const unsigned int index, const mpz_int& distance) const;
 
     //Given a number, iterate the container, looking for double equidistant values
-    //Returns count of how many pairs of equidistance values there are
-    int findAllEquidistantValues(const unsigned int startingIndex);
-    // int getEquidistantCount() const{ return equidistant_vals.size(); };
+    //Returns count of how many pairs of equidistant values there are
+    unsigned long findAllEquidistantValues(const unsigned int startingIndex);
 
     bool testEquidistantValsForSquares(const unsigned int center, const unsigned int distance_idx) const;
 
     static bool isASquare(const mpz_int& testMe);
 
-    static void GivenAnIndexTestValue(unsigned int index, squares_container& data);
+    void GivenAnIndexTestValue(unsigned int index, squares_container& data);
 
-//    mpz_int getValue(int index) const{ return squares.at(index); };
+    static std::string GetTimestamp();
+
+    void makeThreadsAndCalculate();
+    std::pair<unsigned long long, unsigned long long>& getEquidistant_valAtIndex(const unsigned int idx){ return equidistant_vals[idx]; };
 };
 
-inline void squares_container::GivenAnIndexTestValue(unsigned int index, squares_container& data) {
-    int eqValCount = data.findAllEquidistantValues(index);
-    // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
-    if (eqValCount > 1) {
-        if (eqValCount > 13)
-            std::cout <<"XVal: " << index*index << " EquidistantCount: " << eqValCount << "\n";
 
-        for (int eqs = 0; eqs < eqValCount-1; ++eqs) {
-            if (data.testEquidistantValsForSquares(index, eqs)) {
-                std::cout << "WOAH! CHECK OUT " << index << std::endl;
-                std::cout << "Iteration: " << index << " EQ Count: " << eqValCount << "\n";
-            }
-        }
-    }
+inline std::string squares_container::GetTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S");
+    return ss.str();
 }
+
 
 #endif //SQUARES_CONTAINER_H
