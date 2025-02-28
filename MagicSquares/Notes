@@ -218,6 +218,11 @@ XVal: 1,077,480,625 EquidistantCount: 22
 XVal: 3,052,562,500 EquidistantCount: 31
 That 55250 squared. - Just a little update after monitoring these calculations all day.
 
+XVal: 2211874929	EquidistantCount: 40
+80665 squared. I tested the above 40 and it's a multiple of 5, 13, 17 and 29 iirc.
+
+I should check vals like that, taht are also multiples of 37?
+
 -------------------------------------------------
 Squares count: 1 plus 5 given squares.
 X: 3331598400

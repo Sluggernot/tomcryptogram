@@ -119,9 +119,9 @@ bool squares_container::isASquare(const mpz_int& testMe) {
 
 void squares_container::makeThreadsAndCalculate() {
     //Thread stuff init
-    ////32776 was roughly our problem number. Super fucking weird.
-    std::atomic<int> atomic_counter(28000-1); //<<--- THIS IS THE STARTING NUMBER - 64700 last recorded number we left off at
-    constexpr int threadCount = 8;
+    std::atomic<int> atomic_counter(90000-1); //<<--- THIS IS THE STARTING NUMBER - 79000 last recorded number we left off at
+    std::cout << "Starting with: " << atomic_counter << "\n";
+    constexpr int threadCount = 6;
     std::thread worker_thread[threadCount];
     squares_container worker_data[threadCount];
 
