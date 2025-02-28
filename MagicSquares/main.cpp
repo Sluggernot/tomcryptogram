@@ -1,9 +1,9 @@
 
 #include <iostream>
-#include <thread>
 
 #include "MagicSquare_data.h"
 #include "squares_container.h"
+#include "mpz_only.h"
 
 //Contains the numbers for the near miss: https://www.youtube.com/watch?v=2Twa-z_WPE4&t=136s
 // void someGMPexamples();
@@ -12,65 +12,31 @@ void Attempt1();
 
 int main() {
 
-    //https://www.youtube.com/watch?v=uz9jOIdhzs0 - 11:54
-    // MagicSquare_data data(
-    //     2879*2879, 16492609, 2125*2125,
-    //     5992609, 3125*3125, 13538641,
-    //     3875*3875, 3038641, 3353*3353);
-    // MagicSquare_data data(
-    //     3508129, 10819825, 3024121,
-    //     5300017, 5784025, 6268033,
-    //     8543929, 748225, 8059921);
-    // data.printMagicSquare_withSums(true);
-    // data.printMagicSquareDetails();
-    // if (data.isMagicSquare()) std::cout << "OK, shit yourself" << std::endl;
-    // else std::cout << "Yeah, it's not a magic square of squares man.\n";
+    // unsigned int val = 17 * 29 * 37;
+    // std::cout << val << std::endl;
+    // for (unsigned int i = 2; i < val; i++) {
+    //     if (val % i == 0) { std::cout << i << std::endl;}
+    // }
     // return 0;
-
-    //https://www.youtube.com/watch?v=uz9jOIdhzs0 13:52 -
-    //If the Euler brick does exist, one of the 3 diagonals MUST be divisible by 17, 29 or 37...
-    //The formula for generating the anti-parkers would be like: generate a shitload of numbers, starting with a pythagorean prime squared
-    //Then pythagorean prime += that prime squared.
-    //Example: 17sq, (17+17)sq, and so on.
-    //Then find double equidistant values from a center value.
-    //Then do some adding and subtracting with those equidistant values and check if they're all square.
-    //
-    //   x-a  | x+a+b |  x-b
-    //  x+a-b |   x   | x-a+b
-    //   x+b  | x-a-b |  x+a
-    //Where x, a and b have some relation in distance from each other.
-    //It appears we must start at LEAST at 3125 squared.
-    //Ok, so she was hand calculating squares had 4 square numbers that had square numbers equidistant from that number.
-    //Example: 10sq, 34sq, 50sq, 62sq, 70sq - Are all 5 successive numbers the same difference between them?
-    //Or do 70 and 10 simply need to be the same to their neighbor?
 
     //Create a massive list of squares
     constexpr unsigned int howMany = 429496729;
-    squares_container squares(howMany);
-    squares.makeThreadsAndCalculate();
 
+    //New attempt is close to a copy of Attempt 2 but we're using all mpzs, we're going to calculate if we need more values in the set and add them, etc.
+    //So, we're using set indexing for calcs. And will have a bounding value, where we += bounding_val
+    //We will consider finding a 6th square value a massive win!
+    mpz_only temp(howMany);
+    std::cout << "Data initialized" << std::endl;
+    // 17 - 346290
+    temp.setStartingValueAndBounding(90000, 1);
+    temp.start();
 
-    //Iterate the squares, bounding by our pythagorean number, finding all equidistant values
-
-    // int eqValCount = squares.findAllEquidistantValues(i);
-    // // std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
-    // if (eqValCount > 1)
-    // for (int eqs = 0; eqs < squares.getEquidistantCount()-1; ++eqs) {
-    //     if (squares.testEquidistantValsForSquares(i, eqs)) {
-    //         std::cout << "WOAH! CHECK OUT " << i << std::endl;
-    //         std::cout << "Iteration: " << i << " EQ Count: " << squares.getEquidistantCount() << "\n";
-    //     }
-    // }
-
-
-    //OH SHIT! Try them as a cross as well.
-    //that doesnt make any sense with the formula given.
-
-    //Track the ones with more than 5 matching sums? Why did I say 5?
-
+    //Attempt 2 - Simply requires an unsigned int, defining how many square values to calc.
+    //Never found a sixth square number with the formula.
+    // squares_container squares(howMany);
+    // squares.makeThreadsAndCalculate();
 
     // Attempt1();
-
 
     return 0;
 }

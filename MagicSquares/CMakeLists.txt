@@ -9,6 +9,8 @@ add_executable(MagicSquares
         MagicSquare_data.cpp
         squares_container.h
         squares_container.cpp
+        mpz_only.h
+        mpz_only.cpp
 )
 
 find_package(Eigen3 CONFIG REQUIRED)

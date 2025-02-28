@@ -59,12 +59,12 @@ bool squares_container::testEquidistantValsForSquares(const unsigned int center,
     //https://www.youtube.com/watch?v=uz9jOIdhzs0 11:54
     // std::cout << "\n\n";
 
-    for (unsigned int i = distance_idx; i < equidistant_vals.size()-1; i++) {
+    for (unsigned int i = distance_idx+1; i < equidistant_vals.size()-1; i++) {
         const mpz_int& x = squares_ptr->at(center);
 
         const mpz_int a = x - squares_ptr->at(equidistant_vals.at(distance_idx).first);
 
-        const mpz_int b = x - squares_ptr->at(equidistant_vals.at(distance_idx+1).first);
+        const mpz_int b = x - squares_ptr->at(equidistant_vals.at(i).first);
 
         //TopCenter
         const mpz_int xPlusAPlusB = x + a + b;
@@ -91,8 +91,8 @@ bool squares_container::testEquidistantValsForSquares(const unsigned int center,
                     std::cout <<"Val: " << center <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
                     return false;
                 }
-                std::cout << "Equidistant index1: " << equidistant_vals.at(distance_idx).first << "\n";
-                std::cout << "Equidistant index2: " << equidistant_vals.at(distance_idx).second << "\n";
+                std::cout << "Equidistant index1: " << equidistant_vals.at(i).first << "\n";
+                std::cout << "Equidistant index2: " << equidistant_vals.at(i).second << "\n";
                 std::cout << "X: " << x << "\n";
                 std::cout << "A: " << a << "\n";
                 std::cout << "B: " << b << "\n";
@@ -119,7 +119,7 @@ bool squares_container::isASquare(const mpz_int& testMe) {
 
 void squares_container::makeThreadsAndCalculate() {
     //Thread stuff init
-    std::atomic<int> atomic_counter(90000-1); //<<--- THIS IS THE STARTING NUMBER - 79000 last recorded number we left off at
+    std::atomic<int> atomic_counter(68000-1); //<<--- THIS IS THE STARTING NUMBER - 90000 last recorded number we left off at
     std::cout << "Starting with: " << atomic_counter << "\n";
     constexpr int threadCount = 6;
     std::thread worker_thread[threadCount];
@@ -155,10 +155,10 @@ void squares_container::makeThreadsAndCalculate() {
 
 void squares_container::GivenAnIndexTestValue(const unsigned int index, squares_container& data) {
     const int eqValCount = data.findAllEquidistantValues(index);
-    fileOutput << index << "," << index*index << "," << eqValCount << ",";
+    // fileOutput << index << "," << index*index << "," << eqValCount << ",";
     if (eqValCount > 1) {
         for (int eqs = 0; eqs < eqValCount-1; ++eqs) {
-            fileOutput<< data.getEquidistant_valAtIndex(eqs).first << "," << data.getEquidistant_valAtIndex(eqs).second << ",";
+            // fileOutput<< data.getEquidistant_valAtIndex(eqs).first << "," << data.getEquidistant_valAtIndex(eqs).second << ",";
             if (data.testEquidistantValsForSquares(index, eqs)) {
                 std::stringstream fileName; fileName << "MultipleSquareEqs_" << index << ".txt";
                 std::ofstream file(fileName.str().c_str());
@@ -166,6 +166,7 @@ void squares_container::GivenAnIndexTestValue(const unsigned int index, squares_
                 std::cout << "Iteration: " << index << " EQ Count: " << eqValCount << "\n";
             }
         }
+        return;
         fileOutput << data.getEquidistant_valAtIndex(eqValCount-1).first << "," << data.getEquidistant_valAtIndex(eqValCount-1).second << "\n";
 
         std::unique_lock<std::mutex> lock(gLocker);
