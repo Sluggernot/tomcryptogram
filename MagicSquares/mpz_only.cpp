@@ -72,7 +72,7 @@ void mpz_only::start() {
         startingVal+=boundingVal;
 
         ++counter;
-        if (counter % 1000 == 0) { std::cout << startingVal << std::endl; return;}
+        if (counter % 1000 == 0) { std::cout << startingVal << std::endl; }
     }
 }
 

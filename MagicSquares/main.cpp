@@ -27,9 +27,11 @@ int main() {
     //We will consider finding a 6th square value a massive win!
     mpz_only temp(howMany);
     std::cout << "Data initialized" << std::endl;
-    //  1 - 125000
+    //  1 - 155000
     // 17 - 1260000 1,260,000
-    temp.setStartingValueAndBounding(155000, 17);//Left off at 155000, 1 //Starting here 155000 to bound by 17
+    // 29 - 125000
+    // 37 - 125000
+    temp.setStartingValueAndBounding(125000, 29);//Left off at 155000, 1 //Starting here 1260000 to bound by 17
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.start();
 

@@ -224,3 +224,5 @@ XVal: 2211874929	EquidistantCount: 40
 I should check vals like that, taht are also multiples of 37?
 
 Met or exceeded highest equidistant count: 706225,498753750625,67 - This is the first 67 count.
+    Well, this is the first one I found by bounding by 17s, AFTER checking every single value up to 155000
+    So, if there is a lower 67 it would be between 155000 squared and 706225 squared. Bit of a range. lol.
