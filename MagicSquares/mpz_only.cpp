@@ -23,13 +23,18 @@ mpz_only::mpz_only(const unsigned long long howMany) {
 }
 
 void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding) {
+    boundingVal = bounding;
+    startingVal = starting;
+
     if (boundingVal < 0) {boundingVal = 1;}
     if (startingVal < 0) {startingVal = 1;}
     if (startingVal < boundingVal) {startingVal = boundingVal;}
-
+    std::cout << "Starting value: " << startingVal << " Bounding: " << boundingVal << std::endl;
     if (startingVal % boundingVal != 0) {
         startingVal = startingVal - (startingVal % boundingVal);
         if (startingVal % boundingVal != 0) { std::cout << "I forgot how modulus worked?" << std::endl; }
+
+        std::cout << "Starting value: " << startingVal << " Bounding: " << boundingVal << std::endl;
     }
 
     startingVal = starting;

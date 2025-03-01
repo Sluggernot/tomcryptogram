@@ -221,8 +221,11 @@ That 55250 squared. - Just a little update after monitoring these calculations a
 XVal: 2211874929	EquidistantCount: 40
 80665 squared. I tested the above 40 and it's a multiple of 5, 13, 17 and 29 iirc.
 
-I should check vals like that, taht are also multiples of 37?
+I should check vals like that, that are also multiples of 37?
 
 Met or exceeded highest equidistant count: 706225,498753750625,67 - This is the first 67 count.
     Well, this is the first one I found by bounding by 17s, AFTER checking every single value up to 155000
     So, if there is a lower 67 it would be between 155000 squared and 706225 squared. Bit of a range. lol.
+Met or exceeded highest equidistant count: 1071850,1148862422500,67 - First found, bounding by 29
+
+Met or exceeded highest equidistant count: 544765,296768905225,67 - First found, bounding by 37 but my division check isnt working?
