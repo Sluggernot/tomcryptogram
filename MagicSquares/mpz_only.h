@@ -37,7 +37,7 @@ public:
 
 private:
     void GivenAnIndexTestValue(const mpz_int& index);
-    void testEquidistantValsForSquares() const;
+    bool testEquidistantValsForSquares() const;
 
 };
 

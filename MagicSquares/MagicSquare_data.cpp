@@ -135,7 +135,7 @@ bool MagicSquare_data::isMagicSquare() const {
     const mpz_int dia2 = square_arr[2].second + square_arr[4].second + square_arr[6].second;
     if (dia1 != dia2) { return false; }
 
-    std::cout << "Magic square of square of squares found!" << std::endl;
+    std::cout << "Magic square of square of squares found! Shit yourself" << std::endl;
     printMagicSquare();
     return true;
 }
@@ -344,6 +344,20 @@ MagicSquare_data::MagicSquare_data(
     unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d,
     unsigned long long e, unsigned long long f, unsigned long long g, unsigned long long h, unsigned long long i)
 {
+    square_arr[0] = std::make_pair(1, a);
+    square_arr[1] = std::make_pair(1, b);
+    square_arr[2] = std::make_pair(1, c);
+    square_arr[3] = std::make_pair(1, d);
+    square_arr[4] = std::make_pair(1, e);
+    square_arr[5] = std::make_pair(1, f);
+    square_arr[6] = std::make_pair(1, g);
+    square_arr[7] = std::make_pair(1, h);
+    square_arr[8] = std::make_pair(1, i);
+    initializeSquares(square_arr);
+}
+
+void MagicSquare_data::set9(mpz_int a, mpz_int b, mpz_int c, mpz_int d, mpz_int e, mpz_int f, mpz_int g,
+    mpz_int h, mpz_int i) {
     square_arr[0] = std::make_pair(1, a);
     square_arr[1] = std::make_pair(1, b);
     square_arr[2] = std::make_pair(1, c);

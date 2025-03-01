@@ -51,6 +51,10 @@ public:
     }
     MagicSquare_data(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d,
         unsigned long long e, unsigned long long f, unsigned long long g, unsigned long long h, unsigned long long i);
+    void set9(
+        mpz_int a, mpz_int b, mpz_int c,
+        mpz_int d, mpz_int e, mpz_int f,
+        mpz_int g, mpz_int h, mpz_int i);
 
     int getCurrentFocus() const {return current_focus;}
 

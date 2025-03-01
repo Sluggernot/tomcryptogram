@@ -3,6 +3,7 @@
 //
 
 #include "mpz_only.h"
+#include "MagicSquare_data.h"
 
 mpz_only::mpz_only(const unsigned long long howMany) {
     std::cout << "Map max size: " << squares_set.max_size() << std::endl;
@@ -15,6 +16,7 @@ mpz_only::mpz_only(const unsigned long long howMany) {
         squareVal = squareRoot * squareRoot;
         squares_set[squareRoot] = squareVal;
     }
+    std::cout << "Squares_set size: " << squares_set.size() << std::endl;
     //Just in case.
     startingVal = 1;
     boundingVal = 1;
@@ -66,18 +68,18 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index) {
 void mpz_only::start() {
     while (!quit) {
         GivenAnIndexTestValue(startingVal);
-        testEquidistantValsForSquares();
+        if (testEquidistantValsForSquares()) {break;};
         startingVal+=boundingVal;
 
         ++counter;
-        if (counter % 1000 == 0) { std::cout << startingVal << std::endl; }
+        if (counter % 1000 == 0) { std::cout << startingVal << std::endl; return;}
     }
 }
 
 void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
     findAllEquidistantValues(index);
-    if (equidistant_vals.size() > mostEquidistants) {
-        std::cout << index << "," << index*index << "," << equidistant_vals.size() << std::endl;
+    if (equidistant_vals.size() >= mostEquidistants) {
+        std::cout << "Met or exceeded highest equidistant count: " << index << "," << index*index << "," << equidistant_vals.size() << std::endl;
         mostEquidistants = equidistant_vals.size();
     }
     //fileOutput << index << "," << index*index << "," << equidistant_vals.size() << ",";
@@ -92,33 +94,31 @@ bool isASquare(const mpz_int& testMe) {
     return testMe == root*root;
 }
 
-void mpz_only::testEquidistantValsForSquares() const {
-    if (equidistant_vals.size() < 2) return;
+bool mpz_only::testEquidistantValsForSquares() const {
+    if (equidistant_vals.size() < 2) return false;
 
     for (unsigned int i = 0; i < equidistant_vals.size()-1; i++)
     for (unsigned int j = i+1; j < equidistant_vals.size(); j++) {
         const mpz_int& x = squares_set.at(startingVal);
 
         const mpz_int a = x - squares_set.at(equidistant_vals.at(i).first);
-
         const mpz_int b = x - squares_set.at(equidistant_vals.at(j).first);
 
-        //TopCenter
-        const mpz_int xPlusAPlusB = x + a + b;
-        //LeftCenter
-        const mpz_int xPlusAMinusB = x + a - b;
-        //RightCenter
-        const mpz_int xMinusAPlusB = x - a + b;
         //BottomCenter
         const mpz_int xMinusAMinusB = x - a - b;
-
-        if (xMinusAMinusB > 0)
+        if (xMinusAMinusB > 0 && squares_set.contains(xMinusAMinusB))
         {
-            int squaresTotal = 0;
-            if(isASquare(xPlusAPlusB))squaresTotal++;
-            if(isASquare(xPlusAMinusB))squaresTotal++;
-            if(isASquare(xMinusAPlusB))squaresTotal++;
-            if(isASquare(xMinusAMinusB))squaresTotal++;
+            //TopCenter
+            const mpz_int xPlusAPlusB = x + a + b;
+            //LeftCenter
+            const mpz_int xPlusAMinusB = x + a - b;
+            //RightCenter
+            const mpz_int xMinusAPlusB = x - a + b;
+
+            int squaresTotal = 1;
+            if(squares_set.contains(xPlusAPlusB) )++squaresTotal;
+            if(squares_set.contains(xPlusAMinusB))++squaresTotal;
+            if(squares_set.contains(xMinusAPlusB))++squaresTotal;
 
             if (squaresTotal > 1)
             {
@@ -126,8 +126,27 @@ void mpz_only::testEquidistantValsForSquares() const {
                     std::cout << "THIS SHOULD BE A MAGIC SQUARE OF SQUARES!\n";
                 else {
                     std::cout <<"Val: " << startingVal <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
-                    return;
+                    return false;
                 }
+                MagicSquare_data checkMe;
+                checkMe.set9(
+                    x-a, xPlusAPlusB, x-b,
+                    xPlusAMinusB, x, xMinusAPlusB,
+                    x+b, xMinusAMinusB, x+a);
+                checkMe.printMagicSquare_withSums(true);
+                checkMe.printMagicSquareDetails();
+                if (checkMe.isMagicSquare()) return true;
+
+                return true;
+                //wtf its time to make a magic square here and do a real test. wtf man
+                // std::cout << "Supposed val: " << xPlusAPlusB << " - " <<  squares_set.at(xPlusAPlusB) << std::endl;
+                // std::cout << "Supposed val: " << xPlusAMinusB << " - " <<  squares_set.at(xPlusAMinusB) << std::endl;
+                // std::cout << "Supposed val: " << xMinusAPlusB << " - " <<  squares_set.at(xMinusAPlusB) << std::endl;
+                // std::cout << "Supposed val: " << xMinusAMinusB << " - " <<  squares_set.at(xMinusAMinusB) << std::endl;
+                //
+                // std::cout << "Squares_set size: " << squares_set.size() << std::endl;
+                return true;
+
                 std::cout << "X: " << x << "\n";
                 std::cout << "A: " << a << "\n";
                 std::cout << "B: " << b << "\n";
@@ -136,8 +155,9 @@ void mpz_only::testEquidistantValsForSquares() const {
                 std::cout << xPlusAMinusB << " " << x << " " << xMinusAPlusB << std::endl;
                 std::cout << x+b << " " << xMinusAMinusB << " " << x+a << "\n\n";
 
-                return;
+                return true;
             }
         }
     }
+    return false;
 }
