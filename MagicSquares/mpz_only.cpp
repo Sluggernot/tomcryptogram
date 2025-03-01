@@ -36,9 +36,6 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
 
         std::cout << "Starting value: " << startingVal << " Bounding: " << boundingVal << std::endl;
     }
-
-    startingVal = starting;
-    boundingVal = bounding;
 }
 
 void mpz_only::findAllEquidistantValues(const mpz_int& index) {
