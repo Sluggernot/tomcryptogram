@@ -228,13 +228,13 @@ Met or exceeded highest equidistant count: 706225,498753750625,67 - This is the 
     So, if there is a lower 67 it would be between 155000 squared and 706225 squared. Bit of a range. lol.
 Met or exceeded highest equidistant count: 1071850,1148862422500,67 - First found, bounding by 29
 
-Met or exceeded highest equidistant count: 204425,41789580625,67 Largest value: 289081 - Started over with 37 from 3000 squared. 
+Met or exceeded highest equidistant count: 204425,41789580625,67 Largest value: 289081 - Started over with 37 from 3000 squared.
 Met or exceeded highest equidistant count: 544765,296768905225,67 - First found, bounding by 37 but my division check isnt working?
 Met or exceeded highest equidistant count: 204425,41789580625,67 - the real one after I freaking fixed the bounding shit.
     The other value DOES have that many but is NOT the lowest and should NOT be divisible by 37.
 
 Met or exceeded highest equidistant count: 1022125,1044739515625,94
-Met or exceeded highest equidistant count: 1185665,1405801492225,121 - holy shit. Wow.
+Met or exceeded highest equidistant count: 1185665,1405801492225,121 Largest value: 1676519 squared - holy shit. Wow.
     1,405,801,492,225 - 1 trillion?
 I should have it print its highest value, now.
 
