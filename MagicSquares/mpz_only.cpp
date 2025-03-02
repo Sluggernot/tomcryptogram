@@ -81,7 +81,8 @@ void mpz_only::start() {
 void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
     findAllEquidistantValues(index);
     if (equidistant_vals.size() >= mostEquidistants) {
-        std::cout << "Met or exceeded highest equidistant count: " << index << "," << index*index << "," << equidistant_vals.size() << std::endl;
+        std::cout << "Met or exceeded highest equidistant count: " << index << "," << index*index << "," << equidistant_vals.size() << \
+            " Largest value: " << equidistant_vals.at(equidistant_vals.size()-1).second <<  std::endl;
         mostEquidistants = equidistant_vals.size();
     }
     //fileOutput << index << "," << index*index << "," << equidistant_vals.size() << ",";
@@ -108,7 +109,8 @@ bool mpz_only::testEquidistantValsForSquares() const {
 
         //BottomCenter
         const mpz_int xMinusAMinusB = x - a - b;
-        if (xMinusAMinusB > 0 && squares_set.contains(xMinusAMinusB))
+        //shit cant just check squares_set.contains(). We are calculating the square value with x-a-b. Not the square root.
+        if (isASquare(xMinusAMinusB))
         {
             //TopCenter
             const mpz_int xPlusAPlusB = x + a + b;
@@ -118,9 +120,9 @@ bool mpz_only::testEquidistantValsForSquares() const {
             const mpz_int xMinusAPlusB = x - a + b;
 
             int squaresTotal = 1;
-            if(squares_set.contains(xPlusAPlusB) )++squaresTotal;
-            if(squares_set.contains(xPlusAMinusB))++squaresTotal;
-            if(squares_set.contains(xMinusAPlusB))++squaresTotal;
+            if(isASquare(xPlusAPlusB) )++squaresTotal;
+            if(isASquare(xPlusAMinusB))++squaresTotal;
+            if(isASquare(xMinusAPlusB))++squaresTotal;
 
             if (squaresTotal > 1)
             {
