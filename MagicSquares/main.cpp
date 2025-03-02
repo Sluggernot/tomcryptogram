@@ -28,10 +28,10 @@ int main() {
     mpz_only temp(howMany); //Roughly 59GB of data. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     //  1 - 155000
-    // 17 - 189992
+    // 17 - 155000
     // 29 - 155000
-    // 37 - 2407997
-    temp.setStartingValueAndBounding(3000, 17);//Left off at 155000, 1 //Starting here 1260000 to bound by 17
+    // 37 - 155000
+    temp.setStartingValueAndBounding(30, 1);//Left off at 155000, 1 //Starting here 1260000 to bound by 17
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.start();
 

@@ -129,8 +129,8 @@ bool mpz_only::testEquidistantValsForSquares() const {
                 if (squaresTotal > 3)
                     std::cout << "THIS SHOULD BE A MAGIC SQUARE OF SQUARES!\n";
                 else {
-                    std::cout <<"Val: " << startingVal <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
-                    return false;
+                    std::cout <<"FINALLY FOUND 2 OR MORE SQUARES: " << startingVal <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
+                    continue;
                 }
                 MagicSquare_data checkMe;
                 checkMe.set9(
