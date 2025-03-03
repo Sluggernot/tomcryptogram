@@ -241,5 +241,10 @@ Met or exceeded highest equidistant count: 1185665,1405801492225,121 Largest val
     1,405,801,492,225 - 1 trillion?
 I should have it print its highest value, now.
 
-429,496,729
- 1,185,665
+4165821 has 112 pairs. - Weird af. Every single hit from 29 has 67 or 121 but this and we have 3440096 has 94 pairs.
+    How strange.
+Upon further inspection we DO have a few more with 112 and 94 but the numbers are dominated by 97 an 121.
+
+
+Adjusted starting value: 687126 Bounding: 29 - 9h20
+Adjusted starting value: 291015 Bounding: 29 - 8h24... f me accidentally redid a TON of calcs man.

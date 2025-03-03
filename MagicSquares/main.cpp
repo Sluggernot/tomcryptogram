@@ -30,9 +30,9 @@ int main() {
     //  1 - 291030 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
         //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
     // 17 - 291030
-    // 29 - 687155
+    // 29 - 4,467,044 4,782,071 - wtf why did I start over with 29?
     // 37 - 2407997
-    temp.setStartingValueAndBounding(687155-1, 29);//Left off at 291030, 1
+    temp.setStartingValueAndBounding(291030-1, 29);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     // temp.start();

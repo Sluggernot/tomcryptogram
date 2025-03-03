@@ -52,7 +52,7 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     equidistPairs.clear();
     if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
     //Probably make the set a map.
-    const mpz_int idxVal = squares_set->at(index);
+    const mpz_int& idxVal = squares_set->at(index);
     mpz_int iterR = index+1;
     mpz_int iterL = index-1;
     mpz_int subtraction = squares_set->at(iterR)-idxVal;
@@ -65,7 +65,7 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
         while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
             --iterL;
         }
-        if (!squares_set->contains(iterL)) {break;}
+        if (iterL < 0) {break;}//!squares_set->contains(iterL)
         if (idxVal - squares_set->at(iterL) == subtraction) {
             equidistPairs.emplace_back(iterL, iterR);
         }
@@ -116,6 +116,8 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, std::vector<s
         for (unsigned int j = i+1; j < equidistPairs.size(); j++) {
 
             const mpz_int b = x - squares_set->at(equidistPairs.at(j).first);
+            // New early out idea would check equidistPairs for the subtractions. No square roots.
+            // Need a perf checker for some implementations and to know if multithreaded is faster or do I just wait on locks
 
             //BottomCenter
             const mpz_int xMinusAMinusB = x - a - b;
@@ -178,7 +180,10 @@ void mpz_only::makeThreadsAndCalculate() {
         {
             worker.t_currentVal = returnWorkerValAndReadyNext();
             findAllEquidistantValues(currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
-            if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr)) {break;}
+            if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr)) {
+                std::cout << "found one" <<std::endl;
+                break;
+            }
         }
     };
     for (int i = 0; i < threadCount; i++) {
