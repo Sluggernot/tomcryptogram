@@ -27,13 +27,15 @@ int main() {
     //We will consider finding a 6th square value a massive win!
     mpz_only temp(howMany); //Roughly 59GB of data. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
-    //  1 - 155000
-    // 17 - 155000
-    // 29 - 155000
-    // 37 - 155000
-    temp.setStartingValueAndBounding(30, 1);//Left off at 155000, 1 //Starting here 1260000 to bound by 17
+    //  1 - 291030 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
+        //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
+    // 17 - 291030
+    // 29 - 687155
+    // 37 - 2407997
+    temp.setStartingValueAndBounding(687155-1, 29);//Left off at 291030, 1
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
-    temp.start();
+    temp.makeThreadsAndCalculate();
+    // temp.start();
 
     //Attempt 2 - Simply requires an unsigned int, defining how many square values to calc.
     //Never found a sixth square number with the formula.

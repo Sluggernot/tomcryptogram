@@ -356,8 +356,10 @@ MagicSquare_data::MagicSquare_data(
     initializeSquares(square_arr);
 }
 
-void MagicSquare_data::set9(mpz_int a, mpz_int b, mpz_int c, mpz_int d, mpz_int e, mpz_int f, mpz_int g,
-    mpz_int h, mpz_int i) {
+MagicSquare_data::MagicSquare_data(
+    const mpz_int& a, const mpz_int& b, const mpz_int& c,
+    const mpz_int& d, const mpz_int& e, const mpz_int& f,
+    const mpz_int& g, const mpz_int& h, const mpz_int& i) {
     square_arr[0] = std::make_pair(1, a);
     square_arr[1] = std::make_pair(1, b);
     square_arr[2] = std::make_pair(1, c);
