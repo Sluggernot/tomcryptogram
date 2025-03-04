@@ -104,6 +104,8 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
     if (equidistPairs.size() < 4) return false; //Need to have pairs for 2 diags and two tips of the cross
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
+    //Potential best checking strat: Start at equidist[last] and try to find a pair where .first is equidistant from two other .second
+    //This would give us 7 vals. We would then need to find a .first equidistant between x-a and x+b
     const mpz_int& x = squares_set->at(index);
     for (int i = 0; i < equidistPairs.size()-3; i++) {
         const mpz_int a = x - equidistPairs[i].first;
@@ -211,7 +213,66 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
     }
     //Print "closest" magic square of square. This would be the configuration where the tips of the cross are the closest to being square as possible.
     //Second closest?
+    const mpz_int& x = squares_set.at(index);
+    const mpz_int threex = x+x+x;
+    mpz_int closest = equidistant_vals.at(equidistant_vals.size()-1).second;
+    mpz_int total = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
+    mpz_int closestA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
+    mpz_int totalA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
+    int Xa, Xb, Xc, Xd;
+    int XAa, XAb, XAc, XAd;
     for(int i = 0; i < equidistant_vals.size(); i++) {
-        
+        for (int j = 0; j < equidistant_vals.size(); j++) {
+            if (j == i) continue;
+            for (int k = 0; k < equidistant_vals.size(); k++) {
+                if (k == j || k == i) { continue;}
+                for (int l = 0; l < equidistant_vals.size(); l++) {
+                    if (l == i || l == j || l == k) { continue;}
+
+                    mpz_int a = x - equidistant_vals.at(i).first;
+                    mpz_int b = x - equidistant_vals.at(j).first;
+                    mpz_int MinusAMinusB = x-a-b;
+                    mpz_int PlusAMinusB =  x+a-b;
+                    total = abs(MinusAMinusB-equidistant_vals.at(l).first) + abs(PlusAMinusB-equidistant_vals.at(k).first);
+                    if (total < closest) {
+                        std::cout << total << std::endl;
+                        closest = total;
+                        Xa = i; Xb = j; Xc = k; Xd = l;
+                    }
+                    //Also make a x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
+                    totalA = abs(threex - PlusAMinusB + equidistant_vals.at(k).first);
+                    totalA += abs(threex - MinusAMinusB + equidistant_vals.at(l).first);
+                    if (closestA == 0 || totalA < closestA) {
+                        closestA = totalA;
+                        XAa = i; XAb = j; XAc = k; XAd = l;
+                    }
+
+                }
+            }
+        }
     }
+    std::cout << "We want each Sum to add to : " << threex << std::endl;
+    bool didntMatch = false;
+    if (Xa != XAa || Xb != XAb || Xc != XAc || Xd != XAd) {
+        std::cout << "Some indices didnt match both tests?! : " << Xa << " " << XAa << " - " \
+        << Xb << " " << XAb << " - " << Xc << " " << XAc << " - " << Xd << " " << XAd << std::endl;
+        didntMatch = true;
+    }
+    std::cout <<"\nIndices: " << "A: " << Xa << " B: " << Xb << " C: " << Xc << " Xd: " << Xd << std::endl;
+    const MagicSquare_data checkMe(
+                    equidistant_vals.at(Xa).first, equidistant_vals.at(Xd).second, equidistant_vals.at(Xb).first,
+                    equidistant_vals.at(Xc).first, x,                              equidistant_vals.at(Xc).second,
+                    equidistant_vals.at(Xb).second, equidistant_vals.at(Xd).first, equidistant_vals.at(Xa).second);
+    checkMe.printMagicSquare_withSums(true);
+    checkMe.printMagicSquareDetails();
+    if (!didntMatch) { return; }
+
+    std::cout <<"\nIndices: " << "A: " << XAa << " B: " << XAb << " C: " << XAc << " Xd: " << XAd << std::endl;
+    const MagicSquare_data checkMe2(
+                    equidistant_vals.at(XAa).first, equidistant_vals.at(XAd).second, equidistant_vals.at(XAb).first,
+                    equidistant_vals.at(XAc).first, x,                               equidistant_vals.at(XAc).second,
+                    equidistant_vals.at(XAb).second, equidistant_vals.at(XAd).first, equidistant_vals.at(XAa).second);
+    checkMe2.printMagicSquare_withSums(true);
+    checkMe2.printMagicSquareDetails();
+
 }

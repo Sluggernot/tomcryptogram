@@ -16,21 +16,32 @@ void MagicSquare_data::printMagicSquare() const {
 
 void MagicSquare_data::printMagicSquare_withSums(const bool diags) const {
     mpz_int sum = 0;
+    mpz_int sumOfSums = 0;
+
     for (int i = 0; i < 9; i++) {
         std::cout << square_arr[i].second << "\t ";
         sum += square_arr[i].second;
-        if (i != 0 && ((i+1) % 3) == 0) { std::cout <<"\t - " << sum << std::endl; sum = 0;}
+        if (i != 0 && ((i+1) % 3) == 0) { std::cout <<"\t - " << sum << std::endl; sumOfSums +=sum; sum = 0;}
     }
     std::cout << "==================================================" << std::endl;
     for (int i = 0; i < 3; ++i) {
-        std::cout << square_arr[i].second + square_arr[i+3].second + square_arr[i+6].second << "\t ";
+        sum = square_arr[i].second + square_arr[i+3].second + square_arr[i+6].second;
+        sumOfSums += sum;
+        std::cout << sum << "\t ";
     }
     if (diags) {
         std::cout << "\nDiagonals:\nUpper Left to Low Right: ";
-        std::cout << square_arr[0].second + square_arr[4].second + square_arr[8].second << std::endl;
+        sum = square_arr[0].second + square_arr[4].second + square_arr[8].second;
+        sumOfSums += sum;
+        std::cout << sum << std::endl;
         std::cout << "Bottom Left to Up Right: ";
-        std::cout << square_arr[2].second + square_arr[4].second + square_arr[6].second << std::endl;
+        sum = square_arr[2].second + square_arr[4].second + square_arr[6].second;
+        sumOfSums += sum;
+        std::cout << sum << std::endl;
     }
+    //Each sum should be x*3. 8 sums should be x*24.
+    std::cout << "Goal sum of all sums/24 == x: " << sumOfSums/24 << " == " << square_arr[4].second << " difference of: " << \
+     abs(sumOfSums/24-square_arr[4].second) << std::endl;
 }
 
 char MagicSquare_data::printLocation(const int index) const {
@@ -78,7 +89,7 @@ void MagicSquare_data::printMagicSquareDetails() const {
     for (const auto & i : square_arr) {
         sum += i.second;
     }
-    std::cout << "Sum: " << sum << std::endl;
+    std::cout << "Sum: " << sum <<  " Goal Sum/9==x*9: " << sum/9 << " - " << square_arr[4].second << " = " << abs(sum/9-square_arr[4].second) <<  std::endl;
 
     std::cout << "\n\nAscending list: " << std::endl;
     std::set<int> numbers;
