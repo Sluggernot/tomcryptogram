@@ -56,18 +56,13 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     mpz_int iterR = index+1;
     mpz_int iterL = index-1;
     mpz_int subtraction = squares_set->at(iterR)-idxVal;
-    if (!squares_set->contains(iterR)) {
-        //Add vals to squares_set until we are above iterR by 1? Leaving this in here until I need it so I can see what values
-        std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl;
-        return;
-    }
     while (subtraction < idxVal) {
         while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
             --iterL;
         }
-        if (iterL < 0) {break;}//!squares_set->contains(iterL)
+        if (iterL < 0) {std::cout << iterL << " out of range?" << std::endl; break;}//!squares_set->contains(iterL)
         if (idxVal - squares_set->at(iterL) == subtraction) {
-            equidistPairs.emplace_back(iterL, iterR);
+            equidistPairs.emplace_back(squares_set->at(iterL), squares_set->at(iterR));
         }
         ++iterR;
         ++iterL;
@@ -105,58 +100,52 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
     //fileOutput << index << "," << index*index << "," << equidistant_vals.size() << ",";
 }
 
-bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
-    if (equidistPairs.size() < 2) return false;
-    if (equidistPairs.size() > 60) std::cout << index << " has " << equidistPairs.size() << " pairs.\n";
+bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
+    if (equidistPairs.size() < 4) return false; //Need to have pairs for 2 diags and two tips of the cross
+    if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs." << std::endl;
 
     const mpz_int& x = squares_set->at(index);
-    for (unsigned int i = 0; i < equidistPairs.size()-1; i++) {
-        const mpz_int a = x - squares_set->at(equidistPairs.at(i).first);
+    for (unsigned int i = 0; i < equidistPairs.size()-2; i++) {
+        const mpz_int a = x - equidistPairs[i].first;
 
-        for (unsigned int j = i+1; j < equidistPairs.size(); j++) {
-
-            const mpz_int b = x - squares_set->at(equidistPairs.at(j).first);
+        for (unsigned int j = i+1; j < equidistPairs.size()-1; j++) {
+            const mpz_int b = x - equidistPairs[j].first;
             // New early out idea would check equidistPairs for the subtractions. No square roots.
             // Need a perf checker for some implementations and to know if multithreaded is faster or do I just wait on locks
 
             //BottomCenter
             const mpz_int xMinusAMinusB = x - a - b;
+            //LeftCenter
+            const mpz_int xPlusAMinusB = x + a - b;
+
+            bool foundEquidistantCrossTips = false;
+            for (unsigned int k = j+1; k < equidistPairs.size(); k++) {
+                if (equidistPairs[k].first == xMinusAMinusB || equidistPairs[k].first == xPlusAMinusB) {
+                    foundEquidistantCrossTips = true; break;
+                }
+            }
             //shit cant just check squares_set.contains(). We are calculating the squareness of the value with x-a-b. Not the square root.
-            if (isASquare(xMinusAMinusB))
+            if (foundEquidistantCrossTips)
             {
+                std::cout << "Value has " << index << " WOAH!" << std::endl;
                 //TopCenter
                 const mpz_int xPlusAPlusB = x + a + b;
-                //LeftCenter
-                const mpz_int xPlusAMinusB = x + a - b;
+
                 //RightCenter
                 const mpz_int xMinusAPlusB = x - a + b;
 
-                int squaresTotal = 1;
-                if(isASquare(xPlusAPlusB) )++squaresTotal;
-                if(isASquare(xPlusAMinusB))++squaresTotal;
-                if(isASquare(xMinusAPlusB))++squaresTotal;
+                //x-a could be squares_set.at(equidistant_vals.at(i).first), x+a could be .second, x+-b can be at(j) but this is roughly the same since we basically never expect to get here.
+                const MagicSquare_data checkMe(
+                    x-a, xPlusAPlusB, x-b,
+                    xPlusAMinusB, x, xMinusAPlusB,
+                    x+b, xMinusAMinusB, x+a);
+                checkMe.printMagicSquare_withSums(true);
+                checkMe.printMagicSquareDetails();
+                if (checkMe.isMagicSquare()) return true;
 
-                if (squaresTotal > 1)
-                {
-                    if (squaresTotal > 3)
-                        std::cout << "THIS SHOULD BE A MAGIC SQUARE OF SQUARES!\n";
-                    else {
-                        std::cout <<"FINALLY FOUND 2 OR MORE SQUARES: " << index <<  " squared.  Squares count: " << squaresTotal << " plus 5 given squares. \n";
-                        continue;
-                    }
-                    //x-a could be squares_set.at(equidistant_vals.at(i).first), x+a could be .second, x+-b can be at(j) but this is roughly the same since we basically never expect to get here.
-                    const MagicSquare_data checkMe(
-                        x-a, xPlusAPlusB, x-b,
-                        xPlusAMinusB, x, xMinusAPlusB,
-                        x+b, xMinusAMinusB, x+a);
-                    checkMe.printMagicSquare_withSums(true);
-                    checkMe.printMagicSquareDetails();
-                    if (checkMe.isMagicSquare()) return true;
-
-                    std::cout << "IS NOT really a magic square, according to the check!\n";
-                    //Kinda should be impossible to hit. Returning true to ensure I investigate whatever happened here.
-                    return true;
-                }
+                std::cout << "IS NOT really a magic square, according to the check!\n";
+                //Kinda should be impossible to hit. Returning true to ensure I investigate whatever happened here.
+                return true;
             }
         }
     }
