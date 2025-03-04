@@ -53,19 +53,19 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
     //Probably make the set a map.
     const mpz_int& idxVal = squares_set->at(index);
-    mpz_int iterR = index+1;
-    mpz_int iterL = index-1;
+    mpz_int iterR = index+2;
+    mpz_int iterL = index-2;
     mpz_int subtraction = squares_set->at(iterR)-idxVal;
     while (subtraction < idxVal) {
         while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
-            --iterL;
+            iterL-=2;
         }
         if (iterL < 0) {std::cout << iterL << " out of range?" << std::endl; break;}//!squares_set->contains(iterL)
         if (idxVal - squares_set->at(iterL) == subtraction) {
             equidistPairs.emplace_back(squares_set->at(iterL), squares_set->at(iterR));
         }
-        ++iterR;
-        ++iterL;
+        iterR+=2;
+        iterL-=2;
         if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
         subtraction = squares_set->at(iterR)-idxVal;
     }
@@ -102,7 +102,7 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
     if (equidistPairs.size() < 4) return false; //Need to have pairs for 2 diags and two tips of the cross
-    if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs." << std::endl;
+    if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
     const mpz_int& x = squares_set->at(index);
     for (unsigned int i = 0; i < equidistPairs.size()-2; i++) {
@@ -168,7 +168,7 @@ void mpz_only::makeThreadsAndCalculate() {
         while (true)
         {
             worker.t_currentVal = returnWorkerValAndReadyNext();
-            findAllEquidistantValues(currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
+            findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
             if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr)) {
                 std::cout << "found one" <<std::endl;
                 break;
@@ -183,4 +183,24 @@ void mpz_only::makeThreadsAndCalculate() {
         worker_thread[i].t_worker_thread.join();
     }
     std::cout << "Threads are done." << std::endl;
+}
+
+void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
+
+    findAllEquidistantValues(index, equidistant_vals, &squares_set);
+    std::cout <<"Index: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << std::endl;
+    for (int i = 0; i < equidistant_vals.size(); i++) {
+        mpz_int& lVal = equidistant_vals[i].first;
+        mpz_int& rVal = equidistant_vals[i].second;
+        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << std::endl;
+        if (isASquare(squares_set.at(index) - lVal)) std::cout <<"The difference to X: " << squares_set.at(index) << " - " << lVal << " is SQUARE ROOT.\n";
+        if (isASquare(rVal - lVal)) std::cout << "The difference between equidistants, themselves: " << sqrt(rVal - lVal) << " is SQUARE ROOT.\n";
+
+        std::cout << "\tDifference from X to values: " << squares_set.at(index) - lVal << " How many sqrts away: " << index - sqrt(lVal) << " " << sqrt(rVal) - index << std::endl;
+        if (i > 0) {
+            std::cout << "\tDifference to prev-L: " << equidistant_vals[i-1].first - lVal  << " Indices: " << sqrt(equidistant_vals[i-1].first)-sqrt(lVal)  << std::endl;
+            std::cout << "\tDifference to prev-R: " << rVal - equidistant_vals[i-1].second << " Indices: " << sqrt(rVal)-sqrt(equidistant_vals[i-1].second) << std::endl;
+        }
+        std::cout << std::endl;
+    }
 }

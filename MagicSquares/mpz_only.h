@@ -51,6 +51,9 @@ public:
     mpz_int returnWorkerValAndReadyNext();
     void makeThreadsAndCalculate();
 
+    //Just want to see any patterns possible with
+    void PrintAllDataGivenAValue(const mpz_int& index);
+
 private:
     void GivenAnIndexTestValue(const mpz_int& index);
 };
