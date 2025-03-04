@@ -33,7 +33,7 @@ int main() {
     // 17 - 1855040
     // 29 - 4467044 4,782,071 - wtf why did I start over with 29?
     // 37 - 2407997
-    temp.setStartingValueAndBounding(90000, 17);
+    temp.setStartingValueAndBounding(100, 1);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     //temp.start();

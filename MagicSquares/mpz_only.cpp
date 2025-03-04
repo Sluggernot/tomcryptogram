@@ -105,10 +105,10 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
     const mpz_int& x = squares_set->at(index);
-    for (unsigned int i = 0; i < equidistPairs.size()-2; i++) {
+    for (int i = 0; i < equidistPairs.size()-3; i++) {
         const mpz_int a = x - equidistPairs[i].first;
 
-        for (unsigned int j = i+1; j < equidistPairs.size()-1; j++) {
+        for (int j = i+2; j < equidistPairs.size()-2; j++) {
             const mpz_int b = x - equidistPairs[j].first;
             // New early out idea would check equidistPairs for the subtractions. No square roots.
             // Need a perf checker for some implementations and to know if multithreaded is faster or do I just wait on locks
@@ -119,15 +119,21 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int xPlusAMinusB = x + a - b;
 
             bool foundEquidistantCrossTips = false;
-            for (unsigned int k = j+1; k < equidistPairs.size(); k++) {
-                if (equidistPairs[k].first == xMinusAMinusB || equidistPairs[k].first == xPlusAMinusB) {
+            for (int k = i+1; k < j; k++) {
+                if (equidistPairs[k].first == xPlusAMinusB) {
                     foundEquidistantCrossTips = true; break;
                 }
             }
+            if (!foundEquidistantCrossTips)//I just want this info. Not pertinent to finding the real answer.
+                for (int k = j+1; k < equidistPairs.size(); k++) {
+                    if (equidistPairs[k].first == xMinusAMinusB) {
+                        foundEquidistantCrossTips = true; break;
+                    }
+                }
             //shit cant just check squares_set.contains(). We are calculating the squareness of the value with x-a-b. Not the square root.
             if (foundEquidistantCrossTips)
             {
-                std::cout << "Value has " << index << " WOAH!" << std::endl;
+                std::cout << "Value has at least 3 sets working: " << index << " WOAH!" << std::endl;
                 //TopCenter
                 const mpz_int xPlusAPlusB = x + a + b;
 
@@ -202,5 +208,10 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
             std::cout << "\tDifference to prev-R: " << rVal - equidistant_vals[i-1].second << " Indices: " << sqrt(rVal)-sqrt(equidistant_vals[i-1].second) << std::endl;
         }
         std::cout << std::endl;
+    }
+    //Print "closest" magic square of square. This would be the configuration where the tips of the cross are the closest to being square as possible.
+    //Second closest?
+    for(int i = 0; i < equidistant_vals.size(); i++) {
+        
     }
 }
