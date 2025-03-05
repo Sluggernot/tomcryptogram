@@ -27,6 +27,7 @@ mpz_only::mpz_only(const unsigned long long howMany) {
     }
     std::cout << "Squares_set size: " << squares_set.size() << std::endl;
     std::cout << "SANITY CHECK: " << isASquare(squares_set.at(squares_set.size()-1)) << std::endl;
+    std::cout << "SANITY CHECK: " << (((howMany/2) * (howMany/2)) == squares_set.at(howMany/2)) << std::endl;
     //Just in case.
     currentVal = 1;
     boundingVal = 1;
@@ -51,21 +52,21 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
 void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
     equidistPairs.clear();
     if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
-    //Probably make the set a map.
+
     const mpz_int& idxVal = squares_set->at(index);
-    mpz_int iterR = index+2;
-    mpz_int iterL = index-2;
+    mpz_int iterR = index+1;
+    mpz_int iterL = index-1;
     mpz_int subtraction = squares_set->at(iterR)-idxVal;
     while (subtraction < idxVal) {
         while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
-            iterL-=2;
+            iterL-=1;
         }
         if (iterL < 0) {std::cout << iterL << " out of range?" << std::endl; break;}//!squares_set->contains(iterL)
         if (idxVal - squares_set->at(iterL) == subtraction) {
             equidistPairs.emplace_back(squares_set->at(iterL), squares_set->at(iterR));
         }
-        iterR+=2;
-        iterL-=2;
+        iterR+=1;
+        iterL-=1;
         if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
         subtraction = squares_set->at(iterR)-idxVal;
     }
@@ -83,7 +84,7 @@ void mpz_only::start() {
 }
 
 mpz_int mpz_only::returnWorkerValAndReadyNext() {
-    std::unique_lock<std::mutex> lock(gLocker);
+    std::unique_lock<std::mutex> lock(mpzOnlyMutex);
     auto ret = currentVal;
     currentVal += boundingVal;
     if (counter++ % 1000 == 0) { std::cout << currentVal << std::endl; }
@@ -101,61 +102,45 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 }
 
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
-    if (equidistPairs.size() < 4) return false; //Need to have pairs for 2 diags and two tips of the cross
+    if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
-    //Potential best checking strat: Start at equidist[last] and try to find a pair where .first is equidistant from two other .second
-    //This would give us 7 vals. We would then need to find a .first equidistant between x-a and x+b
-    const mpz_int& x = squares_set->at(index);
-    for (int i = 0; i < equidistPairs.size()-3; i++) {
-        const mpz_int a = x - equidistPairs[i].first;
-
-        for (int j = i+2; j < equidistPairs.size()-2; j++) {
-            const mpz_int b = x - equidistPairs[j].first;
-            // New early out idea would check equidistPairs for the subtractions. No square roots.
-            // Need a perf checker for some implementations and to know if multithreaded is faster or do I just wait on locks
-
-            //BottomCenter
-            const mpz_int xMinusAMinusB = x - a - b;
-            //LeftCenter
-            const mpz_int xPlusAMinusB = x + a - b;
-
-            bool foundEquidistantCrossTips = false;
-            for (int k = i+1; k < j; k++) {
-                if (equidistPairs[k].first == xPlusAMinusB) {
-                    foundEquidistantCrossTips = true; break;
+    //Potential best checking strat: Start at equidist[last] and try to find a pair where .first + .second + a different .second = 3X.
+    //This would give us 7 vals.
+    const mpz_int x = index * index;//squares_set->at(index);
+    const mpz_int threeX = x*3;
+    unsigned int counter = 0;
+    for (int i = equidistPairs.size()-1; i >= 2; i--) {
+        const mpz_int bot_center = equidistPairs.at(i).first;
+        for (int j = 0; j < i; j++) {
+            const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
+            const mpz_int botMinusA = bot_center + equidistPairs.at(j).first;
+            for (int k = j+1; k < i; k++) {
+                counter++;
+                if (botPlusA + equidistPairs.at(k).second == threeX ||
+                    botPlusA + equidistPairs.at(k).first == threeX ||
+                    botMinusA + equidistPairs.at(k).second == threeX ||
+                    botMinusA + equidistPairs.at(k).first == threeX) { //I don't think these are possible but I want to be fairly exhaustive
+                    std::cout << "FOUND 3 PAIRS, EQUIDISTANT FROM INDEX:" << index << std::endl;
                 }
-            }
-            if (!foundEquidistantCrossTips)//I just want this info. Not pertinent to finding the real answer.
-                for (int k = j+1; k < equidistPairs.size(); k++) {
-                    if (equidistPairs[k].first == xMinusAMinusB) {
-                        foundEquidistantCrossTips = true; break;
+                else continue;
+
+                const mpz_int PlusAMinusB = equidistPairs.at(j).second + equidistPairs.at(k).first;
+                for (int l = 0; l < equidistPairs.size(); l++) {
+                    if (equidistPairs.at(l).first + PlusAMinusB == threeX || equidistPairs.at(l).second + PlusAMinusB == threeX) {
+                        std::cout << "HOLY SHIT! Go hog wild and get some logic to test this shit. It may be that we have fucked it up:" << index << std::endl;
+                        std::cout << "Top and bot center: " << equidistPairs.at(i).first << "  " << equidistPairs.at(i).second << std::endl;
+                        std::cout << "Unsure: " << equidistPairs.at(j).first << "  " << equidistPairs.at(j).second << " - " <<
+                                                   equidistPairs.at(k).first << "  " << equidistPairs.at(k).second << " - " <<
+                                                   equidistPairs.at(l).first << "  " << equidistPairs.at(l).second << " - " << std::endl;
+                        return true;
                     }
                 }
-            //shit cant just check squares_set.contains(). We are calculating the squareness of the value with x-a-b. Not the square root.
-            if (foundEquidistantCrossTips)
-            {
-                std::cout << "Value has at least 3 sets working: " << index << " WOAH!" << std::endl;
-                //TopCenter
-                const mpz_int xPlusAPlusB = x + a + b;
-
-                //RightCenter
-                const mpz_int xMinusAPlusB = x - a + b;
-
-                //x-a could be squares_set.at(equidistant_vals.at(i).first), x+a could be .second, x+-b can be at(j) but this is roughly the same since we basically never expect to get here.
-                const MagicSquare_data checkMe(
-                    x-a, xPlusAPlusB, x-b,
-                    xPlusAMinusB, x, xMinusAPlusB,
-                    x+b, xMinusAMinusB, x+a);
-                checkMe.printMagicSquare_withSums(true);
-                checkMe.printMagicSquareDetails();
-                if (checkMe.isMagicSquare()) return true;
-
-                std::cout << "IS NOT really a magic square, according to the check!\n";
-                //Kinda should be impossible to hit. Returning true to ensure I investigate whatever happened here.
-                return true;
             }
         }
+    }
+    if (index % 10000 == 0) {
+        std::cout << "Index: " << index << " Pairs: " << equidistPairs.size() << " How many tests: " << counter << std::endl;
     }
     return false;
 }
