@@ -32,7 +32,7 @@ int main() {
         //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
     // 17 - 1976845
     // 29 - 685002
-    // 37 - 7846109
+    // 37 - 11,715,125
     temp.setStartingValueAndBounding(446101-2, 37);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
