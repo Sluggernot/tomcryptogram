@@ -28,12 +28,12 @@ int main() {
     mpz_only temp(howMany); //Roughly 59GB of data. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     //temp.PrintAllDataGivenAValue(5484625); return 1;
-    //  1 - 108000 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
+    //  1 - 685002 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
         //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
-    // 17 - 953003
-    // 29 - 446101
-    // 37 - 446101
-    temp.setStartingValueAndBounding(108000, 1);
+    // 17 - 1976845
+    // 29 - 685002
+    // 37 - 7846109
+    temp.setStartingValueAndBounding(446101-2, 37);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     //temp.start();

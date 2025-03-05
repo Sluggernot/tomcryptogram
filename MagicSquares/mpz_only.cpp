@@ -37,8 +37,8 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
     boundingVal = bounding;
     currentVal = starting;
 
-    if (boundingVal < 0) {boundingVal = 1;}
-    if (currentVal < 0) {currentVal = 1;}
+    if (boundingVal < 1) {boundingVal = 1;}
+    if (currentVal < 1) {currentVal = 1;}
     if (currentVal < boundingVal) {currentVal = boundingVal;}
     std::cout << "Starting value: " << currentVal << " Bounding: " << boundingVal << std::endl;
     if (currentVal % boundingVal != 0) {
@@ -59,14 +59,14 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     mpz_int subtraction = squares_set->at(iterR)-idxVal;
     while (subtraction < idxVal) {
         while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
-            iterL-=1;
+            --iterL;
         }
         if (iterL < 0) {std::cout << iterL << " out of range?" << std::endl; break;}//!squares_set->contains(iterL)
         if (idxVal - squares_set->at(iterL) == subtraction) {
             equidistPairs.emplace_back(squares_set->at(iterL), squares_set->at(iterR));
         }
-        iterR+=1;
-        iterL-=1;
+        ++iterR;
+        --iterL;
         if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
         subtraction = squares_set->at(iterR)-idxVal;
     }
@@ -75,7 +75,7 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
 void mpz_only::start() {
     while (!quit) {
         GivenAnIndexTestValue(currentVal);
-        if (testEquidistantValsForSquares(currentVal, equidistant_vals, &squares_set)) {break;};
+        if (testEquidistantValsForSquares(currentVal, equidistant_vals)) {break;};
         currentVal+=boundingVal;
 
         ++counter;
@@ -101,12 +101,11 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
     //fileOutput << index << "," << index*index << "," << equidistant_vals.size() << ",";
 }
 
-bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
+bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
     //Potential best checking strat: Start at equidist[last] and try to find a pair where .first + .second + a different .second = 3X.
-    //This would give us 7 vals.
     const mpz_int x = index * index;//squares_set->at(index);
     const mpz_int threeX = x*3;
     unsigned int counter = 0;
@@ -117,6 +116,9 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int botMinusA = bot_center + equidistPairs.at(j).first;
             for (int k = j+1; k < i; k++) {
                 counter++;
+                if (abs(botPlusA + equidistPairs.at(k).second - threeX) < 1000) {
+                    std::cout << "Index: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - threeX) << std::endl;
+                }
                 if (botPlusA + equidistPairs.at(k).second == threeX ||
                     botPlusA + equidistPairs.at(k).first == threeX ||
                     botMinusA + equidistPairs.at(k).second == threeX ||
@@ -139,15 +141,13 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             }
         }
     }
-    if (index % 10000 == 0) {
-        std::cout << "Index: " << index << " Pairs: " << equidistPairs.size() << " How many tests: " << counter << std::endl;
-    }
+
     return false;
 }
 
 void mpz_only::makeThreadsAndCalculate() {
     std::cout << "About to make the workers." << std::endl;
-    constexpr int threadCount = 6;
+    constexpr int threadCount = 14;
     mpz_threadWorker worker_thread[threadCount];
     std::cout << "Starting threads..." << std::endl;
 
@@ -162,7 +162,7 @@ void mpz_only::makeThreadsAndCalculate() {
         {
             worker.t_currentVal = returnWorkerValAndReadyNext();
             findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
-            if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr)) {
+            if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals)) {
                 std::cout << "found one" <<std::endl;
                 break;
             }

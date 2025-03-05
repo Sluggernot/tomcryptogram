@@ -179,9 +179,6 @@ Equidistant index2: 2839
 X: 5784025
 A: 2275896
 B: 2759904
-3508129 10819825 3024121
-5300017 5784025 6268033
-8543929 748225 8059921
 
 WOAH! CHECK OUT 2405
 Iteration: 2405 EQ Count: 13
@@ -239,5 +236,8 @@ Met or exceeded highest equidistant count: 204425,41789580625,67 - the real one 
 Met or exceeded highest equidistant count: 1022125,1044739515625,94
 
 5243225 has 112 pairs. Largest val: 54981854250625
+
+8381425 has 202 pairs. Largest val: 140495908491409
+Wow. And no near misses or anything?! wtf.
 
 

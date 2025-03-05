@@ -41,13 +41,11 @@ public:
 
     void setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding);
 
-    //findAllEquidistantValues
     static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set);
-    static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set);
+    static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
 
     void start();
 
-    //We want a full copy into our threads. Probably will end up being thread_GetNewVal and use mutex here. All good.
     mpz_int returnWorkerValAndReadyNext();
     void makeThreadsAndCalculate();
 
