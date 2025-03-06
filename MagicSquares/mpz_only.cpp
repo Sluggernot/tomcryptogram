@@ -53,22 +53,21 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     equidistPairs.clear();
     if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
 
-    const mpz_int& idxVal = squares_set->at(index);
+    //About to make changes to try add instead?
+    const mpz_int twoX = squares_set->at(index) * 2;
     mpz_int iterR = index+1;
-    mpz_int iterL = index-1;
-    mpz_int subtraction = squares_set->at(iterR)-idxVal;
-    while (subtraction < idxVal) {
-        while (squares_set->contains(iterL) && idxVal - squares_set->at(iterL) < subtraction) {
-            --iterL;
+    mpz_int iterL = index;
+
+    mpz_int iterRv = squares_set->at(iterR);
+    while (iterRv < twoX) {
+        while (iterL >= 0 && twoX < squares_set->at(--iterL) + iterRv) {}
+        if (iterL < 0) { break;}//!squares_set->contains(iterL)
+        if (squares_set->at(iterL) + iterRv == twoX) {
+            equidistPairs.emplace_back(squares_set->at(iterL), iterRv);
         }
-        if (iterL < 0) {std::cout << iterL << " out of range?" << std::endl; break;}//!squares_set->contains(iterL)
-        if (idxVal - squares_set->at(iterL) == subtraction) {
-            equidistPairs.emplace_back(squares_set->at(iterL), squares_set->at(iterR));
-        }
-        ++iterR;
-        --iterL;
-        if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
-        subtraction = squares_set->at(iterR)-idxVal;
+        iterRv = squares_set->at(++iterR);//If it dies we were out of values.
+        //--iterL;
+        // if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
     }
 }
 
@@ -181,20 +180,21 @@ void mpz_only::makeThreadsAndCalculate() {
 void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
 
     findAllEquidistantValues(index, equidistant_vals, &squares_set);
-    std::cout <<"Index: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << std::endl;
+    std::cout <<"Index: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n";
+    return;
     for (int i = 0; i < equidistant_vals.size(); i++) {
         mpz_int& lVal = equidistant_vals[i].first;
         mpz_int& rVal = equidistant_vals[i].second;
-        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << std::endl;
+        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << "\n";
         if (isASquare(squares_set.at(index) - lVal)) std::cout <<"The difference to X: " << squares_set.at(index) << " - " << lVal << " is SQUARE ROOT.\n";
         if (isASquare(rVal - lVal)) std::cout << "The difference between equidistants, themselves: " << sqrt(rVal - lVal) << " is SQUARE ROOT.\n";
 
-        std::cout << "\tDifference from X to values: " << squares_set.at(index) - lVal << " How many sqrts away: " << index - sqrt(lVal) << " " << sqrt(rVal) - index << std::endl;
+        std::cout << "\tDifference from X to values: " << squares_set.at(index) - lVal << " How many sqrts away: " << index - sqrt(lVal) << " " << sqrt(rVal) - index << "\n";
         if (i > 0) {
-            std::cout << "\tDifference to prev-L: " << equidistant_vals[i-1].first - lVal  << " Indices: " << sqrt(equidistant_vals[i-1].first)-sqrt(lVal)  << std::endl;
-            std::cout << "\tDifference to prev-R: " << rVal - equidistant_vals[i-1].second << " Indices: " << sqrt(rVal)-sqrt(equidistant_vals[i-1].second) << std::endl;
+            std::cout << "\tDifference to prev-L: " << equidistant_vals[i-1].first - lVal  << " Indices: " << sqrt(equidistant_vals[i-1].first)-sqrt(lVal)  << "\n";
+            std::cout << "\tDifference to prev-R: " << rVal - equidistant_vals[i-1].second << " Indices: " << sqrt(rVal)-sqrt(equidistant_vals[i-1].second) << "\n";
         }
-        std::cout << std::endl;
+        std::cout << "\n";
     }
     //Print "closest" magic square of square. This would be the configuration where the tips of the cross are the closest to being square as possible.
     //Second closest?
