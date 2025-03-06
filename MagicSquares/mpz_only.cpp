@@ -210,14 +210,15 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
         for (int j = 0; j < equidistant_vals.size(); j++) {
             if (j == i) continue;
             for (int k = 0; k < equidistant_vals.size(); k++) {
-                if (k == j || k == i) { continue;}
+                if (k == i || k == j) { continue;}
+                const mpz_int a = x - equidistant_vals.at(i).first;
+                const mpz_int b = x - equidistant_vals.at(j).first;
+                const mpz_int MinusAMinusB = x-a-b;
+                const mpz_int PlusAMinusB =  x+a-b;
+
                 for (int l = 0; l < equidistant_vals.size(); l++) {
                     if (l == i || l == j || l == k) { continue;}
 
-                    mpz_int a = x - equidistant_vals.at(i).first;
-                    mpz_int b = x - equidistant_vals.at(j).first;
-                    mpz_int MinusAMinusB = x-a-b;
-                    mpz_int PlusAMinusB =  x+a-b;
                     total = abs(MinusAMinusB-equidistant_vals.at(l).first) + abs(PlusAMinusB-equidistant_vals.at(k).first);
                     if (total < closest) {
                         std::cout << total << std::endl;
