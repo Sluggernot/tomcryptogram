@@ -61,12 +61,11 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
     mpz_int iterRv = squares_set->at(iterR);
     while (iterRv < twoX) {
         while (iterL >= 0 && twoX < squares_set->at(--iterL) + iterRv) {}
-        if (iterL < 0) { break;}//!squares_set->contains(iterL)
+        if (iterL < 0) { break; }
         if (squares_set->at(iterL) + iterRv == twoX) {
             equidistPairs.emplace_back(squares_set->at(iterL), iterRv);
         }
         iterRv = squares_set->at(++iterR);//If it dies we were out of values.
-        //--iterL;
         // if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
     }
 }
@@ -103,29 +102,60 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
+    // if (index%1000 == 0) {
+    //     const mpz_int x = index * index;//squares_set->at(index);
+    //     const auto bottomPair =equidistPairs.at(equidistPairs.size()-1);
+    //     std::cout << "Sanity check " << ((bottomPair.second - bottomPair.first) / 8)*4 + bottomPair.first - x << std::endl;
+    //     std::cout << "Sanity check " << bottomPair.second - x << "  " << bottomPair.first - x << std::endl;
+    //     std::cout << "Sanity check " << bottomPair.second + bottomPair.first - x - x << std::endl;
+    // }
+#ifdef TEST1
+    //I was able to prove this is bad for testing. The distance between all teh values does NOT have to be the same.
+    for (int i = equidistPairs.size()-1; i >= 3; i--) {
+        //Get a distance of "1" from lowest. If equidist pairs contains first_plus_one check for plus two and three. That would be yahtzee.
+        const mpz_int one_unit = ((equidistPairs.at(i).second - equidistPairs.at(i).first) / 8);
+        const mpz_int first_plus_one = one_unit + equidistPairs.at(i).first;
+        for (int j = i-1; j >= 2; j--) {
+            if (equidistPairs.at(j).first > first_plus_one+one_unit) { break;}
+            if (equidistPairs.at(j).first != first_plus_one) { continue;}
+            std::cout << "Found a buddy: " << index << "\n";
+            const mpz_int second_plus_one = equidistPairs.at(j).first + one_unit;
+            for (int k = j-1; k < equidistPairs.size(); k--) {
+                if (equidistPairs.at(k).first > second_plus_one+one_unit) { break;}
+                if (equidistPairs.at(k).first != second_plus_one) { continue;}
+                std::cout << "Found a twofer: " << index << "\n";
+                const mpz_int third_plus_one = equidistPairs.at(k).first + one_unit;
+                for (int l = k+1; l < equidistPairs.size(); l++) {
+                    if (equidistPairs.at(k).first > second_plus_one+one_unit) { break;}
+                    if (equidistPairs.at(k).first != second_plus_one) { continue;}
+                    std::cout << "Shouldbe a magic square of squares?! " << index << "\n";
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+#endif
 
     //Potential best checking strat: Start at equidist[last] and try to find a pair where .first + .second + a different .second = 3X.
-    const mpz_int x = index * index;//squares_set->at(index);
-    const mpz_int threeX = x*3;
-    unsigned int counter = 0;
     for (int i = equidistPairs.size()-1; i >= 2; i--) {
-        const mpz_int bot_center = equidistPairs.at(i).first;
+        const mpz_int& bot_center = equidistPairs.at(i).first;
+        const mpz_int& top_center = equidistPairs.at(i).second;
         for (int j = 0; j < i; j++) {
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
-            const mpz_int botMinusA = bot_center + equidistPairs.at(j).first;
+            const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
             for (int k = j+1; k < i; k++) {
-                counter++;
-                if (abs(botPlusA + equidistPairs.at(k).second - threeX) < 1000) {
-                    std::cout << "Index: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - threeX) << std::endl;
-                }
-                if (botPlusA + equidistPairs.at(k).second == threeX ||
-                    botPlusA + equidistPairs.at(k).first == threeX ||
-                    botMinusA + equidistPairs.at(k).second == threeX ||
-                    botMinusA + equidistPairs.at(k).first == threeX) { //I don't think these are possible but I want to be fairly exhaustive
+                // if (abs(botPlusA + equidistPairs.at(k).second - threeX) < 1000) {
+                //     std::cout << "Index: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - threeX) << std::endl;
+                // }
+                if (topPlusA+equidistPairs.at(k).first == botPlusA+equidistPairs.at(k).second) {
                     std::cout << "FOUND 3 PAIRS, EQUIDISTANT FROM INDEX:" << index << std::endl;
                 }
                 else continue;
+                std::cout << "Found a twofer: Recode the shit after this line." << index << "\n";
 
+                const mpz_int x = index * index;//squares_set->at(index);
+                const mpz_int threeX = x*3;//Doubt we need this at all.
                 const mpz_int PlusAMinusB = equidistPairs.at(j).second + equidistPairs.at(k).first;
                 for (int l = 0; l < equidistPairs.size(); l++) {
                     if (equidistPairs.at(l).first + PlusAMinusB == threeX || equidistPairs.at(l).second + PlusAMinusB == threeX) {
