@@ -9,12 +9,11 @@
 // void someGMPexamples();
 
 void Attempt1();
-void GetInfoOnMagicSquares(int center_num);
+void GetInfoOnMagicSquares(int center_num, const int testA = 0, const int testB = 0);
 
 int main() {
 
-    GetInfoOnMagicSquares(1000);
-    return 0;
+    // GetInfoOnMagicSquares(1000, 223, 444); return 0;
     // unsigned int val = 17 * 29 * 37;
     // std::cout << val << std::endl;
     // for (unsigned int i = 2; i < val; i++) {
@@ -33,17 +32,19 @@ int main() {
     //We will consider finding a 6th square value a massive win!
     mpz_only temp(howMany); //Roughly 59GB of data. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
-    // temp.PrintAllDataGivenAValue(12469925); return 0;
-    //  1 - 1313001 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
+    // temp.isOneDouble(1000); return 0;
+    //temp.PrintAllDataGivenAValue(5107973); return 0;
+    //  1 - 2326000 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
         //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
-    // 17 - 1313001
+    // 17 - 6985810
     // 29 - 1313001
     // 37 - 1313001
-    temp.setStartingValueAndBounding(1313001, 1);
+    temp.setStartingValueAndBounding(2326000, 1);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     //temp.start();
 
+    //Oh, right. So what holds true between LoShu and HiShu? 1 and 9 with the B diag, right?
 
     //Attempt 2 - Simply requires an unsigned int, defining how many square values to calc.
     //Never found a sixth square number with the formula.
@@ -121,22 +122,26 @@ bool isLoShu(const int* square) {
 
     if (square[val_loc::bot_lft] > square[val_loc::cen_lft] && square[val_loc::cen_lft] > square[val_loc::top_lft]) {return false;}
 
-    int ratio_of_1 = (square[val_loc::top_cen] - square[val_loc::bot_cen]) / 8;
-    if (square[val_loc::bot_cen] + ratio_of_1 * 6 == square[val_loc::cen_lft] &&
-        square[val_loc::bot_cen] + ratio_of_1 * 2 == square[val_loc::cen_rgt]) {std::cout << square[val_loc::cen_cen] << "\n"; return true;}
+    if (square[val_loc::bot_lft] < square[val_loc::cen_lft] && square[val_loc::cen_lft] > square[val_loc::top_lft]) {return true;}
 
-    //std::cout << "WHAT THE F? My checks dont work!\n";
+    std::cout << "WHAT THE F? My checks dont work!\n";
     return false;
 }
 
-void GetInfoOnMagicSquares(const int center_num) {
+void GetInfoOnMagicSquares(const int center_num, const int testA, const int testB) {
 
+    std::cout << "\nHiShus are generated when A > .5*B. wtf? " << std::endl;
     //Start from the ends and work in
     int LoShuCount = 0;
     int HiShuCount = 0;
 
-    int a = 1;
-    int b = 3;
+    int a;
+    int b;
+    if (testA == 0) a = 1;
+    else a = testA;
+    if (testB == 0) b = 3;
+    else b = testB;
+
     int total = 0;
     int vals[val_loc::LAST_VAL];
     while (a+b < center_num) {
@@ -152,15 +157,22 @@ void GetInfoOnMagicSquares(const int center_num) {
         vals[val_loc::cen_rgt] = center_num+a-b;
         vals[val_loc::cen_cen] = center_num;
 
-        if (isLoShu(vals)){ LoShuCount++; }
+        if (isLoShu(vals)){ LoShuCount++; std::cout << "a: " << a << " b: " << b << std::endl; }
         else { HiShuCount++; }
         ++a;
         ++b;
         if (b == 2*a){++a; ++b;}
         ++total;
+        if (testA != 0 && testB != 0) {
+            std::cout << "First third: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
+            return;
+        }
     }
+    std::cout << "Values are now at a: " << a << " b: " << b << std::endl;
     std::cout << "First third: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
 
+    bool wasLoShu = false;
+    bool tempIsLoShu = false;
     --a;
     while (a > 0) {
         vals[val_loc::bot_lft] = center_num+a;
@@ -174,15 +186,20 @@ void GetInfoOnMagicSquares(const int center_num) {
         vals[val_loc::cen_lft] = center_num-a+b;
         vals[val_loc::cen_rgt] = center_num+a-b;
         vals[val_loc::cen_cen] = center_num;
-
-        if (isLoShu(vals)){ LoShuCount++; }
+        wasLoShu = tempIsLoShu;
+        tempIsLoShu = isLoShu(vals);
+        if (wasLoShu!=tempIsLoShu) {std::cout << "Changing over from HiShu to LoShu: was a: " << a+1 << " b: " << b << " now a: " << a << " b: " << b << std::endl;}
+        if (tempIsLoShu){ LoShuCount++; }
         else { HiShuCount++; }
         --a;
         ++total;
     }
-    std::cout << "Second third: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
+    ++a;
+    std::cout << "A back down to 1: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
 
+    while (a+b < center_num) ++b;
     --b;
+    std::cout << "Put b up at b: " << b << " with A at: " << a << std::endl;
     while (b > 3) {
         vals[val_loc::bot_lft] = center_num+a;
         vals[val_loc::bot_rgt] = center_num+b;
@@ -195,14 +212,17 @@ void GetInfoOnMagicSquares(const int center_num) {
         vals[val_loc::cen_lft] = center_num-a+b;
         vals[val_loc::cen_rgt] = center_num+a-b;
         vals[val_loc::cen_cen] = center_num;
+        wasLoShu = tempIsLoShu;
+        tempIsLoShu = isLoShu(vals);
+        if (wasLoShu!=tempIsLoShu) {std::cout << "Changing over from HiShu to LoShu: was a: " << a+1 << " b: " << b << " now a: " << a << " b: " << b << std::endl;}
 
-        if (isLoShu(vals)){ LoShuCount++; }
+        if (tempIsLoShu){ LoShuCount++; }
         else { HiShuCount++; }
         --b;
         ++total;
     }
 
-    std::cout << "Final: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
+    std::cout << "Take b back down to 4: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
 }
 
 // void someGMPexamples() {

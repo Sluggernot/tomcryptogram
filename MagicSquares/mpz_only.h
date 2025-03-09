@@ -21,7 +21,9 @@ struct mpz_threadWorker {
     std::thread t_worker_thread;
     const std::map<mpz_int, mpz_int>* t_squares_set_ptr= nullptr;
     std::vector<std::pair<mpz_int, mpz_int>> t_equidistant_vals;
-    mpz_int t_currentVal;
+    mpz_int t_currentVal = 0;
+    int t_threadIterCounter = 0;
+    int t_threadNum = 0;
 };
 
 class mpz_only {
@@ -30,8 +32,9 @@ class mpz_only {
     std::vector<std::pair<mpz_int, mpz_int>> equidistant_vals;
     mpz_int currentVal, boundingVal, maxValInContainer;
     bool quit = false;
-    int counter = 0;
+    std::atomic<int> counter = 0;
     unsigned long mostEquidistants = 41;
+    unsigned int threadNum = 1;
 
     std::stringstream fileOutput;
 
@@ -46,11 +49,13 @@ public:
 
     void start();
 
-    mpz_int returnWorkerValAndReadyNext();
+    void returnWorkerValAndReadyNext(mpz_int& index);
     void makeThreadsAndCalculate();
 
     //Just want to see any patterns possible with
     void PrintAllDataGivenAValue(const mpz_int& index);
+
+    void isOneDouble(mpz_int startingPlace) const;
 
 private:
     void GivenAnIndexTestValue(const mpz_int& index);

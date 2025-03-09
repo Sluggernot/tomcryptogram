@@ -81,12 +81,20 @@ void mpz_only::start() {
     }
 }
 
-mpz_int mpz_only::returnWorkerValAndReadyNext() {
+void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
+    //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
+    ++counter;
+    if (counter > threadNum) {
+        if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
+        index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
+        return;
+    }
+
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
-    auto ret = currentVal;
+    const auto ret = currentVal;
     currentVal += boundingVal;
-    if (counter++ % 1000 == 0) { std::cout << currentVal << std::endl; }
-    return ret;
+    if (counter % 1000 == 0) { std::cout << currentVal << std::endl; }
+    index = ret;
 }
 
 void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
@@ -183,13 +191,16 @@ void mpz_only::makeThreadsAndCalculate() {
     //Make them all point to the precalculated data.
     for (int i = 0; i < threadCount; i++) {
         worker_thread[i].t_squares_set_ptr = &squares_set;
+        worker_thread[i].t_threadNum = i;
     }
     std::cout << "Data is set." << std::endl;
 
     auto lambda = [this](mpz_threadWorker& worker) {
         while (true)
         {
-            worker.t_currentVal = returnWorkerValAndReadyNext();
+            if (++worker.t_threadIterCounter % 1000){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
+
+            returnWorkerValAndReadyNext(worker.t_currentVal);
             findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
             if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals)) {
                 std::cout << "found one" <<std::endl;
@@ -197,6 +208,7 @@ void mpz_only::makeThreadsAndCalculate() {
             }
         }
     };
+    threadNum = threadCount;
     for (int i = 0; i < threadCount; i++) {
         worker_thread[i].t_worker_thread = std::thread(lambda, std::ref(worker_thread[i]));
     }
@@ -211,7 +223,7 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
 
     findAllEquidistantValues(index, equidistant_vals, &squares_set);
     std::cout <<"Index: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n";
-    return;
+//    return;
     for (int i = 0; i < equidistant_vals.size(); i++) {
         mpz_int& lVal = equidistant_vals[i].first;
         mpz_int& rVal = equidistant_vals[i].second;
@@ -245,6 +257,7 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
                 const mpz_int b = x - equidistant_vals.at(j).first;
                 const mpz_int MinusAMinusB = x-a-b;
                 const mpz_int PlusAMinusB =  x+a-b;
+                const mpz_int PlusAPlusB =  x+a+b;
 
                 for (int l = 0; l < equidistant_vals.size(); l++) {
                     if (l == i || l == j || l == k) { continue;}
@@ -255,8 +268,8 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
                         closest = total;
                         Xa = i; Xb = j; Xc = k; Xd = l;
                     }
-                    //Also make a x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
-                    totalA = abs(threex - PlusAMinusB + equidistant_vals.at(k).first);
+                    //Also make an: x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
+                    totalA = abs(threex - PlusAPlusB - equidistant_vals.at(k).first);
                     totalA += abs(threex - MinusAMinusB + equidistant_vals.at(l).first);
                     if (closestA == 0 || totalA < closestA) {
                         closestA = totalA;
@@ -291,4 +304,36 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
     checkMe2.printMagicSquare_withSums(true);
     checkMe2.printMagicSquareDetails();
 
+}
+
+void mpz_only::isOneDouble(mpz_int startingPlace = 0) const {
+
+    mpz_int closest_diff = 1;//squares_set.at(maxValInContainer-1); //Stupidly large number to start with
+    //mpz_int temp_diff = squares_set.at(maxValInContainer-1); //Stupidly large number to start with
+    mpz_int closestIdxHalf = 0;
+    mpz_int closestIdxDoub = 0;
+
+    mpz_int startingPoint = 10;
+    if (startingPlace > 10) { startingPoint = startingPlace; }
+    for (mpz_int i = startingPoint; i < squares_set.size(); ++i ) {
+        const mpz_int twoTimes = squares_set.at(i)*2;
+        for (mpz_int j = i+1; j < squares_set.size(); ++j) {
+            if (squares_set.at(j) > twoTimes+twoTimes/4) { break; } //Some arbitrary allowance to go over but not go to end of all squares.
+            if (squares_set.at(j) == twoTimes) {
+                std::cout << "Wtf? Exactly double? Index: " << i << " is half of index: " << j << std::endl;
+                return;
+            }
+            if (abs(squares_set.at(j) - twoTimes) <= closest_diff) {
+                closest_diff = abs(squares_set.at(j) - twoTimes);
+                closestIdxHalf = i;
+                closestIdxDoub = j;
+                std::cout << "Half: idx: " << i << " val: " << squares_set.at(i) << " It's doub: idx:" << j << " val: " << squares_set.at(j) << " ValDiff: " << squares_set.at(j) - twoTimes << std::endl;
+                i = i*2 + (i/10*4);//sqrt(squares_set.at(i)*5);
+                break;
+            }
+        }
+    }
+    if (closestIdxHalf == startingPlace) { std::cout << "Start and closest to half were the same \n"; }
+    std::cout << "Closest indices to being double: " << closestIdxHalf << " roughly half of idx: " << closestIdxDoub << "  with a diff of ";
+    std::cout << abs(squares_set.at(closestIdxHalf) *2 - squares_set.at(closestIdxDoub)) << " " << std::endl;
 }

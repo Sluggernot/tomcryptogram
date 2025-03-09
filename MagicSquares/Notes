@@ -267,3 +267,37 @@ Wow. And no near misses or anything?! wtf.
 13460785 has 121 pairs. Largest val: 362370019368361
 
 
+Half: idx: 2378 val: 5654884 It's doub: idx:3363 val: 11309769 ValDiff: 1
+Half: idx: 5741 val: 32959081 It's doub: idx:8119 val: 65918161 ValDiff: -1
+Half: idx: 13860 val: 192099600 It's doub: idx:19601 val: 384199201 ValDiff: 1
+Half: idx: 33461 val: 1119638521 It's doub: idx:47321 val: 2239277041 ValDiff: -1
+Half: idx: 80782 val: 6525731524 It's doub: idx:114243 val: 13051463049 ValDiff: 1
+Half: idx: 195025 val: 38034750625 It's doub: idx:275807 val: 76069501249 ValDiff: -1
+Half: idx: 470832 val: 221682772224 It's doub: idx:665857 val: 443365544449 ValDiff: 1
+Half: idx: 1136689 val: 1292061882721 It's doub: idx:1607521 val: 2584123765441 ValDiff: -1
+Half: idx: 2744210 val: 7530688524100 It's doub: idx:3880899 val: 15061377048201 ValDiff: 1
+
+each Half is 5.828... times the previous Half? Why?
+The ratio between each index is 2.414213 ? 1 + sqrt(2) ? wtf?
+
+So I took these higher indices and the 2 I tested had 4 pairs. Just enough to try to make a magic square but my tester didnt output shit.
+Adding 1 to this index resulted in an equidistant set of 1 pair.
+Subtracting 1 resulted in the below output. The magic square is VERY suspiciously close. All sums end in 300. All numbers end in 100.
+This one is just cool.
+
+Index: 1136690 Value: 1292064156100  Equidistant count: 13
+1077838476100	1856161008100	928505688100		- 3862505172300
+1139107944100	1292064156100	1445020368100		- 3876192468300
+1655622624100	727967304100	1506289836100		- 3889879764300
+==================================================
+3872569044300	3876192468300	3879815892300
+Diagonals:
+Upper Left to Low Right: 3876192468300
+Bottom Left to Up Right: 3876192468300
+Goal sum of all sums/24 == x: 1292064156100 == 1292064156100 difference of: 0
+Smallest: Center Bottom
+  Val: 727967304100
+Largest:Center Top
+  Val: 1856161008100
+Sum: 11628577404900 Goal Sum/9==x*9: 1292064156100 - 1292064156100 = 0
+
