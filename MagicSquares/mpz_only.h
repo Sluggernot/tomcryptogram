@@ -55,7 +55,7 @@ public:
     //Just want to see any patterns possible with
     void PrintAllDataGivenAValue(const mpz_int& index);
 
-    void isOneDouble(mpz_int startingPlace) const;
+    void isOneDouble(const mpz_int& startingPlace) const;
 
 private:
     void GivenAnIndexTestValue(const mpz_int& index);

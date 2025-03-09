@@ -52,6 +52,8 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
 void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
     equidistPairs.clear();
     if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
+    //The real limit is 2.414 * index but we can live with this.
+    if (index * 2 > squares_set->crbegin()->first) {std::cout << "We have exceeded the limit of our map: " << index << std::endl; return;}
 
     //About to make changes to try add instead?
     const mpz_int twoX = squares_set->at(index) * 2;
@@ -84,11 +86,12 @@ void mpz_only::start() {
 void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
     ++counter;
-    if (counter > threadNum) {
-        if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
-        index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
-        return;
-    }
+    //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples.
+    // if (counter > threadNum) {
+    //     if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
+    //     index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
+    //     return;
+    // }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
     const auto ret = currentVal;
@@ -198,7 +201,7 @@ void mpz_only::makeThreadsAndCalculate() {
     auto lambda = [this](mpz_threadWorker& worker) {
         while (true)
         {
-            if (++worker.t_threadIterCounter % 1000){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
+            if (++worker.t_threadIterCounter % 1000==0){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
 
             returnWorkerValAndReadyNext(worker.t_currentVal);
             findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
@@ -306,7 +309,7 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
 
 }
 
-void mpz_only::isOneDouble(mpz_int startingPlace = 0) const {
+void mpz_only::isOneDouble(const mpz_int& startingPlace = 0) const {
 
     mpz_int closest_diff = 1;//squares_set.at(maxValInContainer-1); //Stupidly large number to start with
     //mpz_int temp_diff = squares_set.at(maxValInContainer-1); //Stupidly large number to start with
@@ -319,7 +322,7 @@ void mpz_only::isOneDouble(mpz_int startingPlace = 0) const {
         const mpz_int twoTimes = squares_set.at(i)*2;
         for (mpz_int j = i+1; j < squares_set.size(); ++j) {
             if (squares_set.at(j) > twoTimes+twoTimes/4) { break; } //Some arbitrary allowance to go over but not go to end of all squares.
-            if (squares_set.at(j) == twoTimes) {
+            if (squares_set.at(j) == twoTimes) { //Impossible. This is more of a sanity check.
                 std::cout << "Wtf? Exactly double? Index: " << i << " is half of index: " << j << std::endl;
                 return;
             }

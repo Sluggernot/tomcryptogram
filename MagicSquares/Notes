@@ -301,3 +301,19 @@ Largest:Center Top
   Val: 1856161008100
 Sum: 11628577404900 Goal Sum/9==x*9: 1292064156100 - 1292064156100 = 0
 
+-- This is why the threads can't simply bound on their own -- They diverge quickly
+//Output from letting threads bound on their own and NOT just pick up the next available number.
+Thread 7 did 1000: on index: 2381978
+Thread 8 did 1000: on index: 2381980
+Thread 13 did 1000: on index: 2381979
+Thread 12 did 1000: on index: 2381983
+Thread 5 did 1000: on index: 2381974
+Thread 10 did 1000: on index: 2381981
+Thread 2 did 1000: on index: 2381977
+Thread 9 did 1000: on index: 2381976
+Thread 4 did 1000: on index: 2381985
+Thread 3 did 1000: on index: 2381984
+Thread 11 did 1000: on index: 2381982
+Thread 0 did 1000: on index: 2381972
+Thread 6 did 1000: on index: 2381975
+Thread 1 did 1000: on index: 2381973
