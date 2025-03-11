@@ -301,6 +301,11 @@ Largest:Center Top
   Val: 1856161008100
 Sum: 11628577404900 Goal Sum/9==x*9: 1292064156100 - 1292064156100 = 0
 
+Index: 3648795 had a near miss bot row: 69120
+
+
+
+
 -- This is why the threads can't simply bound on their own -- They diverge quickly
 //Output from letting threads bound on their own and NOT just pick up the next available number.
 Thread 7 did 1000: on index: 2381978

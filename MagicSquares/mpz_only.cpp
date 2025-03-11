@@ -87,11 +87,11 @@ void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
     ++counter;
     //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples.
-    // if (counter > threadNum) {
-    //     if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
-    //     index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
-    //     return;
-    // }
+    if (counter > threadNum) {
+        if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
+        index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
+        return;
+    }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
     const auto ret = currentVal;
@@ -113,13 +113,7 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
     if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
-    // if (index%1000 == 0) {
-    //     const mpz_int x = index * index;//squares_set->at(index);
-    //     const auto bottomPair =equidistPairs.at(equidistPairs.size()-1);
-    //     std::cout << "Sanity check " << ((bottomPair.second - bottomPair.first) / 8)*4 + bottomPair.first - x << std::endl;
-    //     std::cout << "Sanity check " << bottomPair.second - x << "  " << bottomPair.first - x << std::endl;
-    //     std::cout << "Sanity check " << bottomPair.second + bottomPair.first - x - x << std::endl;
-    // }
+
 #ifdef TEST1
     //I was able to prove this is bad for testing. The distance between all teh values does NOT have to be the same.
     for (int i = equidistPairs.size()-1; i >= 3; i--) {
@@ -149,35 +143,24 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
 #endif
 
     //Potential best checking strat: Start at equidist[last] and try to find a pair where .first + .second + a different .second = 3X.
-    for (int i = equidistPairs.size()-1; i >= 2; i--) {
+    for (int i = equidistPairs.size()-1; i >= 2; i--)
+    {
         const mpz_int& bot_center = equidistPairs.at(i).first;
         const mpz_int& top_center = equidistPairs.at(i).second;
-        for (int j = 0; j < i; j++) {
+        for (int j = i-1; j >= 1; j--) {
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
-            for (int k = j+1; k < i; k++) {
-                // if (abs(botPlusA + equidistPairs.at(k).second - threeX) < 1000) {
-                //     std::cout << "Index: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - threeX) << std::endl;
-                // }
-                if (topPlusA+equidistPairs.at(k).first == botPlusA+equidistPairs.at(k).second) {
-                    std::cout << "FOUND 3 PAIRS, EQUIDISTANT FROM INDEX:" << index << std::endl;
+            for (int k = j+1; k > 1; k--) {
+                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 10000000) {
+                    std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
+                }
+                if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
+                    std::cout << "\n\nFOUND 3 PAIRS, EQUIDISTANT FROM INDEX:" << index << std::endl <<std::endl;
                 }
                 else continue;
                 std::cout << "Found a twofer: Recode the shit after this line." << index << "\n";
 
-                const mpz_int x = index * index;//squares_set->at(index);
-                const mpz_int threeX = x*3;//Doubt we need this at all.
-                const mpz_int PlusAMinusB = equidistPairs.at(j).second + equidistPairs.at(k).first;
-                for (int l = 0; l < equidistPairs.size(); l++) {
-                    if (equidistPairs.at(l).first + PlusAMinusB == threeX || equidistPairs.at(l).second + PlusAMinusB == threeX) {
-                        std::cout << "HOLY SHIT! Go hog wild and get some logic to test this shit. It may be that we have fucked it up:" << index << std::endl;
-                        std::cout << "Top and bot center: " << equidistPairs.at(i).first << "  " << equidistPairs.at(i).second << std::endl;
-                        std::cout << "Unsure: " << equidistPairs.at(j).first << "  " << equidistPairs.at(j).second << " - " <<
-                                                   equidistPairs.at(k).first << "  " << equidistPairs.at(k).second << " - " <<
-                                                   equidistPairs.at(l).first << "  " << equidistPairs.at(l).second << " - " << std::endl;
-                        return true;
-                    }
-                }
+                return true;
             }
         }
     }
@@ -201,7 +184,7 @@ void mpz_only::makeThreadsAndCalculate() {
     auto lambda = [this](mpz_threadWorker& worker) {
         while (true)
         {
-            if (++worker.t_threadIterCounter % 1000==0){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
+//            if (++worker.t_threadIterCounter % 1000==0){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
 
             returnWorkerValAndReadyNext(worker.t_currentVal);
             findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
@@ -225,87 +208,94 @@ void mpz_only::makeThreadsAndCalculate() {
 void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
 
     findAllEquidistantValues(index, equidistant_vals, &squares_set);
-    std::cout <<"Index: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n";
+    std::cout <<"\nIndex: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
 //    return;
+    mpf_float valueF = index*index;
+    std::vector<mpf_float> ratios;
     for (int i = 0; i < equidistant_vals.size(); i++) {
         mpz_int& lVal = equidistant_vals[i].first;
         mpz_int& rVal = equidistant_vals[i].second;
-        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << "\n";
-        if (isASquare(squares_set.at(index) - lVal)) std::cout <<"The difference to X: " << squares_set.at(index) << " - " << lVal << " is SQUARE ROOT.\n";
-        if (isASquare(rVal - lVal)) std::cout << "The difference between equidistants, themselves: " << sqrt(rVal - lVal) << " is SQUARE ROOT.\n";
 
-        std::cout << "\tDifference from X to values: " << squares_set.at(index) - lVal << " How many sqrts away: " << index - sqrt(lVal) << " " << sqrt(rVal) - index << "\n";
-        if (i > 0) {
-            std::cout << "\tDifference to prev-L: " << equidistant_vals[i-1].first - lVal  << " Indices: " << sqrt(equidistant_vals[i-1].first)-sqrt(lVal)  << "\n";
-            std::cout << "\tDifference to prev-R: " << rVal - equidistant_vals[i-1].second << " Indices: " << sqrt(rVal)-sqrt(equidistant_vals[i-1].second) << "\n";
-        }
-        std::cout << "\n";
+        //Ratio of the difference from the value to index
+        mpf_float ratio = (mpf_float(rVal)-valueF) / mpf_float(valueF);
+        ratios.push_back(ratio);
+        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << " Ratio: " << ratio << "\n";
     }
-    //Print "closest" magic square of square. This would be the configuration where the tips of the cross are the closest to being square as possible.
-    //Second closest?
+    //Go through all ratios and try to find a pair that ~= another?
+//    return;
+    std::cout << "Now searching for closest to magic square\n";
     const mpz_int& x = squares_set.at(index);
     const mpz_int threex = x+x+x;
-    mpz_int closest = equidistant_vals.at(equidistant_vals.size()-1).second;
-    mpz_int total = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
+
+    mpz_int closestToI = equidistant_vals.at(equidistant_vals.size()-1).second;
+    mpz_int closestToAll = equidistant_vals.at(equidistant_vals.size()-1).second;
+    mpz_int total = x*3;//equidistant_vals.at(equidistant_vals.size()-1).second;
     mpz_int closestA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
     mpz_int totalA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
     int Xa, Xb, Xc, Xd;
     int XAa, XAb, XAc, XAd;
-    for(int i = 0; i < equidistant_vals.size(); i++) {
-        for (int j = 0; j < equidistant_vals.size(); j++) {
-            if (j == i) continue;
-            for (int k = 0; k < equidistant_vals.size(); k++) {
-                if (k == i || k == j) { continue;}
-                const mpz_int a = x - equidistant_vals.at(i).first;
-                const mpz_int b = x - equidistant_vals.at(j).first;
-                const mpz_int MinusAMinusB = x-a-b;
-                const mpz_int PlusAMinusB =  x+a-b;
-                const mpz_int PlusAPlusB =  x+a+b;
 
-                for (int l = 0; l < equidistant_vals.size(); l++) {
-                    if (l == i || l == j || l == k) { continue;}
+    for(int i = equidistant_vals.size()-1; i >= 2; i--) {
+        const mpz_int botCenter = equidistant_vals.at(i).first;
+        const mpz_int topCenter = equidistant_vals.at(i).second;
+        for (int j = i-1; j >= 1; j--) {
+            for (int k = j+1; k >= 0; k--) {
+                if (k == i || k == j) { continue; }
 
-                    total = abs(MinusAMinusB-equidistant_vals.at(l).first) + abs(PlusAMinusB-equidistant_vals.at(k).first);
-                    if (total < closest) {
-                        std::cout << total << std::endl;
-                        closest = total;
-                        Xa = i; Xb = j; Xc = k; Xd = l;
+                total = abs(x*3-(
+                    // botCenter+equidistant_vals.at(j).second+equidistant_vals.at(k).second+
+                    topCenter+equidistant_vals.at(j).first+equidistant_vals.at(k).first ));
+                if (total < closestToI) {
+                    if (total < 1000) std::cout <<"If this number is 0, it's the I shape: " << total << std::endl;
+
+                    closestToI = total;
+                    closestToAll = x*3+1;
+                    for (int l = 0; l < equidistant_vals.size(); l++) {
+                        if (l == i || l == j || l == k) { continue;}
+                        mpz_int howClose = abs(x*6-(
+                            (equidistant_vals.at(j).second+equidistant_vals.at(k).first +equidistant_vals.at(l).second)+
+                            (equidistant_vals.at(j).first +equidistant_vals.at(k).second+equidistant_vals.at(l).first)));
+
+                        if (howClose < closestToAll) {
+                            Xa = i; Xb = j; Xc = k; Xd = l;
+                            closestToAll=howClose;
+                        }
+                        //"Closest" could be where top/bot row and left/right col are closest to a total of 12x?
+                        //Also make an: x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
+                        // totalA = abs(threex - PlusAPlusB - equidistant_vals.at(k).first);
+                        // totalA += abs(threex - MinusAMinusB + equidistant_vals.at(l).first);
+                        // if (closestA == 0 || totalA < closestA) {
+                        //     closestA = totalA;
+                        //     XAa = i; XAb = j; XAc = k; XAd = l;
+                        // }
                     }
-                    //Also make an: x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
-                    totalA = abs(threex - PlusAPlusB - equidistant_vals.at(k).first);
-                    totalA += abs(threex - MinusAMinusB + equidistant_vals.at(l).first);
-                    if (closestA == 0 || totalA < closestA) {
-                        closestA = totalA;
-                        XAa = i; XAb = j; XAc = k; XAd = l;
-                    }
-
                 }
             }
         }
     }
-    std::cout << "We want each Sum to add to : " << threex << std::endl;
+
     bool didntMatch = false;
-    if (Xa != XAa || Xb != XAb || Xc != XAc || Xd != XAd) {
-        std::cout << "Some indices didnt match both tests?! : " << Xa << " " << XAa << " - " \
-        << Xb << " " << XAb << " - " << Xc << " " << XAc << " - " << Xd << " " << XAd << std::endl;
-        didntMatch = true;
-    }
+    // if (Xa != XAa || Xb != XAb || Xc != XAc || Xd != XAd) {
+    //     std::cout << "Some indices didnt match both tests?! : " << Xa << " " << XAa << " - " \
+    //     << Xb << " " << XAb << " - " << Xc << " " << XAc << " - " << Xd << " " << XAd << std::endl;
+    //     didntMatch = true;
+    // }
     std::cout <<"\nIndices: " << "A: " << Xa << " B: " << Xb << " C: " << Xc << " Xd: " << Xd << std::endl;
     const MagicSquare_data checkMe(
-                    equidistant_vals.at(Xa).first, equidistant_vals.at(Xd).second, equidistant_vals.at(Xb).first,
-                    equidistant_vals.at(Xc).first, x,                              equidistant_vals.at(Xc).second,
-                    equidistant_vals.at(Xb).second, equidistant_vals.at(Xd).first, equidistant_vals.at(Xa).second);
+                    equidistant_vals.at(Xb).first, equidistant_vals.at(Xa).second, equidistant_vals.at(Xc).first,
+                    equidistant_vals.at(Xd).first, x,                              equidistant_vals.at(Xd).second,
+                    equidistant_vals.at(Xc).second,equidistant_vals.at(Xa).first,  equidistant_vals.at(Xb).second);
     checkMe.printMagicSquare_withSums(true);
     checkMe.printMagicSquareDetails();
     if (!didntMatch) { return; }
 
-    std::cout <<"\nIndices: " << "A: " << XAa << " B: " << XAb << " C: " << XAc << " Xd: " << XAd << std::endl;
-    const MagicSquare_data checkMe2(
-                    equidistant_vals.at(XAa).first, equidistant_vals.at(XAd).second, equidistant_vals.at(XAb).first,
-                    equidistant_vals.at(XAc).first, x,                               equidistant_vals.at(XAc).second,
-                    equidistant_vals.at(XAb).second, equidistant_vals.at(XAd).first, equidistant_vals.at(XAa).second);
-    checkMe2.printMagicSquare_withSums(true);
-    checkMe2.printMagicSquareDetails();
+    // std::cout <<"\nIndices: " << "A: " << XAa << " B: " << XAb << " C: " << XAc << " Xd: " << XAd << std::endl;
+    // const MagicSquare_data checkMe2(
+    //                 equidistant_vals.at(XAa).first, equidistant_vals.at(XAd).second, equidistant_vals.at(XAb).first,
+    //                 equidistant_vals.at(XAc).first, x,                               equidistant_vals.at(XAc).second,
+    //                 equidistant_vals.at(XAb).second, equidistant_vals.at(XAd).first, equidistant_vals.at(XAa).second);
+    // checkMe2.printMagicSquare_withSums(true);
+    // checkMe2.printMagicSquareDetails();
 
 }
 
