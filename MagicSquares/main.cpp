@@ -33,23 +33,13 @@ int main(int argc, char **argv) {
             return 0;
         }
         //Set thread count
-        //Shit, have to learn to convert string to mpz_int. I know there is a demo example somewhere.
+        //Allow input of starting value
+        //Allow input of number of squares to put into map - Probably can convert map back to vector with our implementation. Faster?
+
+        //Ask Chris for more info on params
     }
-    //return 0;
 
     // GetInfoOnMagicSquares(1000, 223, 444); return 0;
-    // mpz_int val = 3648795;
-    // val = val*val;
-    // unsigned int factorsCount = 0;
-    // std::cout <<"Factors of: " << val << std::endl;
-    // for (mpz_int i = 2; i < val/2; ++i) {
-    //     if (val % i == 0) {++factorsCount; /*std::cout << i << std::endl;*/}
-    // }
-    // std::cout <<val << "has: " << factorsCount << " factors." << std::endl;
-    // return 0;
-
-    //Create a massive list of squares
-    constexpr unsigned int howMany = 429496729/10;
 
     // Try to find a way to input a number and find two more square numbers that add to a 4th square?
     // Can I find the extremes when using the x-a-b formula, given a number? Enter 1000 and if a = 1, how far can  b go? How far can both go, staying 1 apart? 1000/2+-1?
@@ -57,16 +47,16 @@ int main(int argc, char **argv) {
     //New attempt is close to a copy of Attempt 2 but we're using all mpzs, we're going to calculate if we need more values in the set and add them, etc.
     //So, we're using set indexing for calcs. And will have a bounding value, where we += bounding_val
     //We will consider finding a 6th square value a massive win!
-    mpz_only temp(howMany); //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
+    mpz_only temp(g_howMany); //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     // temp.isOneDouble(1000); return 0;
     //temp.PrintAllDataGivenAValue(3648795); return 0;//1136690
-    //  1 - 3640000 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
+    //  1 - 4064125 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
     //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
     // 17 - 6985810
-    // 29 - 1313001
-    // 37 - 1313001
-    temp.setStartingValueAndBounding(3640000, 1);
+    // 29 - 4064125
+    // 37 - 4064125
+    temp.setStartingValueAndBounding(4064125, 37);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     //temp.start();

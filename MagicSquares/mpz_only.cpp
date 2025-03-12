@@ -151,7 +151,7 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
             for (int k = j+1; k > 1; k--) {
-                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 100000) {
+                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 1000000) {
                     std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
                 }
                 if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
