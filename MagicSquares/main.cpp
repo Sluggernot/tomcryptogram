@@ -1,9 +1,11 @@
 
+#include <fstream>
 #include <iostream>
 
 #include "MagicSquare_data.h"
 #include "squares_container.h"
 #include "mpz_only.h"
+#include "gmpxx.h"
 
 //Contains the numbers for the near miss: https://www.youtube.com/watch?v=2Twa-z_WPE4&t=136s
 // void someGMPexamples();
@@ -11,14 +13,39 @@
 void Attempt1();
 void GetInfoOnMagicSquares(int center_num, const int testA = 0, const int testB = 0);
 
-int main() {
+void ProcessAllNumbersInAFile(std::string_view fileName);
+
+/* Right now I don't care about a ton of argument possibilities
+ * --file=Somefilename.txt
+ */
+
+//Make this an mpz_int
+unsigned int g_howMany = 429496729/10; //429496729 is Roughly 59GB of data. Divide by 10 for now.
+
+int main(int argc, char **argv) {
+
+    std::string_view fileParamPrefix = "--file=";
+    for (int i = 1; i < argc; i++) {
+        std::string_view arg = argv[i];
+        if (arg.starts_with(fileParamPrefix)) {
+            const std::string_view fileName = arg.substr(fileParamPrefix.size());
+            ProcessAllNumbersInAFile(fileName);
+            return 0;
+        }
+        //Set thread count
+        //Shit, have to learn to convert string to mpz_int. I know there is a demo example somewhere.
+    }
+    //return 0;
 
     // GetInfoOnMagicSquares(1000, 223, 444); return 0;
-    // unsigned int val = 17 * 29 * 37;
-    // std::cout << val << std::endl;
-    // for (unsigned int i = 2; i < val; i++) {
-    //     if (val % i == 0) { std::cout << i << std::endl;}
+    // mpz_int val = 3648795;
+    // val = val*val;
+    // unsigned int factorsCount = 0;
+    // std::cout <<"Factors of: " << val << std::endl;
+    // for (mpz_int i = 2; i < val/2; ++i) {
+    //     if (val % i == 0) {++factorsCount; /*std::cout << i << std::endl;*/}
     // }
+    // std::cout <<val << "has: " << factorsCount << " factors." << std::endl;
     // return 0;
 
     //Create a massive list of squares
@@ -33,13 +60,13 @@ int main() {
     mpz_only temp(howMany); //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     // temp.isOneDouble(1000); return 0;
-    //temp.PrintAllDataGivenAValue(4962640); return 0;//1136690
-    //  1 - 2958007 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
+    //temp.PrintAllDataGivenAValue(3648795); return 0;//1136690
+    //  1 - 3640000 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
     //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
     // 17 - 6985810
     // 29 - 1313001
     // 37 - 1313001
-    temp.setStartingValueAndBounding(2958007, 1);
+    temp.setStartingValueAndBounding(3640000, 1);
     //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
     temp.makeThreadsAndCalculate();
     //temp.start();
@@ -55,6 +82,38 @@ int main() {
 
     return 0;
 }
+
+void ProcessAllNumbersInAFile(std::string_view fileName) {
+    mpz_only temp(g_howMany);
+    std::cout << "Data initialized" << std::endl;
+    std::fstream file;
+    file.open(fileName.data(), std::ios::in);
+    if (!file) {
+        std::cerr << "Failed to open file\n";
+        return;
+    }
+
+    if (file.is_open()) {
+        std::cout << "File opened" << std::endl;
+        std::string line;
+        while (!file.eof()) {
+            std::getline(file, line);
+            try {
+                mpz_int num(line); // Convert string directly to mpz_int
+                std::cout << num << " - ";
+                num = temp.PrintAllDataGivenAValue(num, false);
+                std::cout << num << "\n";
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "Invalid number: " << line << '\n';
+            }
+        }
+        file.close();
+    }
+    else {
+        std::cerr << "Unable to open file " << fileName << '\n';
+    }
+}
+
 
 void Attempt1()
 {

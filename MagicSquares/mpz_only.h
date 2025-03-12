@@ -53,7 +53,7 @@ public:
     void makeThreadsAndCalculate();
 
     //Just want to see any patterns possible with
-    void PrintAllDataGivenAValue(const mpz_int& index);
+    mpz_int PrintAllDataGivenAValue(const mpz_int& index, bool bPrint = true);
 
     void isOneDouble(const mpz_int& startingPlace) const;
 

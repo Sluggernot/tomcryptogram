@@ -151,7 +151,7 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
             for (int k = j+1; k > 1; k--) {
-                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 10000000) {
+                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 100000) {
                     std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
                 }
                 if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
@@ -205,25 +205,27 @@ void mpz_only::makeThreadsAndCalculate() {
     std::cout << "Threads are done." << std::endl;
 }
 
-void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
+mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=true*/) {
 
     findAllEquidistantValues(index, equidistant_vals, &squares_set);
-    std::cout <<"\nIndex: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
-//    return;
-    mpf_float valueF = index*index;
-    std::vector<mpf_float> ratios;
-    for (int i = 0; i < equidistant_vals.size(); i++) {
-        mpz_int& lVal = equidistant_vals[i].first;
-        mpz_int& rVal = equidistant_vals[i].second;
+    if (bPrint) {
+        std::cout <<"\nIndex: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
+        mpf_float valueF = index*index;
+        std::vector<mpf_float> ratios;
 
-        //Ratio of the difference from the value to index
-        mpf_float ratio = (mpf_float(rVal)-valueF) / mpf_float(valueF);
-        ratios.push_back(ratio);
-        std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << " Ratio: " << ratio << "\n";
+        for (int i = 0; i < equidistant_vals.size(); i++) {
+            mpz_int& lVal = equidistant_vals[i].first;
+            mpz_int& rVal = equidistant_vals[i].second;
+
+            //Ratio of the difference from the value to index
+            mpf_float ratio = (mpf_float(rVal)-valueF) / mpf_float(valueF);
+            ratios.push_back(ratio);
+            std::cout << sqrt(lVal) << ", " << lVal << "  -  " << sqrt(rVal) << ", " << rVal << " Ratio: " << ratio << "\n";
+        }
+        //Go through all ratios and try to find a pair that ~= another?
+        //    return;
+        std::cout << "Now searching for closest to magic square\n";
     }
-    //Go through all ratios and try to find a pair that ~= another?
-//    return;
-    std::cout << "Now searching for closest to magic square\n";
     const mpz_int& x = squares_set.at(index);
     const mpz_int threex = x+x+x;
 
@@ -274,20 +276,25 @@ void mpz_only::PrintAllDataGivenAValue(const mpz_int &index) {
         }
     }
 
-    bool didntMatch = false;
     // if (Xa != XAa || Xb != XAb || Xc != XAc || Xd != XAd) {
     //     std::cout << "Some indices didnt match both tests?! : " << Xa << " " << XAa << " - " \
     //     << Xb << " " << XAb << " - " << Xc << " " << XAc << " - " << Xd << " " << XAd << std::endl;
     //     didntMatch = true;
     // }
-    std::cout <<"\nIndices: " << "A: " << Xa << " B: " << Xb << " C: " << Xc << " Xd: " << Xd << std::endl;
-    const MagicSquare_data checkMe(
-                    equidistant_vals.at(Xb).first, equidistant_vals.at(Xa).second, equidistant_vals.at(Xc).first,
-                    equidistant_vals.at(Xd).first, x,                              equidistant_vals.at(Xd).second,
-                    equidistant_vals.at(Xc).second,equidistant_vals.at(Xa).first,  equidistant_vals.at(Xb).second);
-    checkMe.printMagicSquare_withSums(true);
-    checkMe.printMagicSquareDetails();
-    if (!didntMatch) { return; }
+    mpz_int howClose = abs(threex - equidistant_vals.at(Xb).first - equidistant_vals.at(Xa).second - equidistant_vals.at(Xc).first);
+    if (bPrint) {
+        std::cout <<"\nIndices: " << "A: " << Xa << " B: " << Xb << " C: " << Xc << " Xd: " << Xd << std::endl;
+        const MagicSquare_data checkMe(
+                        equidistant_vals.at(Xb).first, equidistant_vals.at(Xa).second, equidistant_vals.at(Xc).first,
+                        equidistant_vals.at(Xd).first, x,                              equidistant_vals.at(Xd).second,
+                        equidistant_vals.at(Xc).second,equidistant_vals.at(Xa).first,  equidistant_vals.at(Xb).second);
+        checkMe.printMagicSquare_withSums(true);
+        std::cout << "\nHow close are we to a magic square: " << howClose << std::endl;
+    }
+
+    return howClose;
+
+    //checkMe.printMagicSquareDetails();
 
     // std::cout <<"\nIndices: " << "A: " << XAa << " B: " << XAb << " C: " << XAc << " Xd: " << XAd << std::endl;
     // const MagicSquare_data checkMe2(
