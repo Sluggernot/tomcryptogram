@@ -87,11 +87,11 @@ void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
     ++counter;
     //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples.
-    if (counter > threadNum) {
-        if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
-        index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
-        return;
-    }
+    // if (counter > threadNum) {
+    //     if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
+    //     index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
+    //     return;
+    // }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
     const auto ret = currentVal;
@@ -150,7 +150,7 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
         for (int j = i-1; j >= 1; j--) {
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
-            for (int k = j+1; k > 1; k--) {
+            for (int k = j-1; k > 1; k--) {
                 if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 1000000) {
                     std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
                 }
@@ -208,6 +208,7 @@ void mpz_only::makeThreadsAndCalculate() {
 mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=true*/) {
 
     findAllEquidistantValues(index, equidistant_vals, &squares_set);
+    if (equidistant_vals.size() < 4) {std::cout << "Not enough equidistant vals to make anything. "; return 0; }
     if (bPrint) {
         std::cout <<"\nIndex: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
         mpf_float valueF = index*index;
@@ -241,12 +242,16 @@ mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=tr
         const mpz_int botCenter = equidistant_vals.at(i).first;
         const mpz_int topCenter = equidistant_vals.at(i).second;
         for (int j = i-1; j >= 1; j--) {
-            for (int k = j+1; k >= 0; k--) {
+            for (int k = j-1; k >= 0; k--) {
                 if (k == i || k == j) { continue; }
 
                 total = abs(x*3-(
                     // botCenter+equidistant_vals.at(j).second+equidistant_vals.at(k).second+
                     topCenter+equidistant_vals.at(j).first+equidistant_vals.at(k).first ));
+                if (total == closestToI) {
+                    std::cout << "Two sets with the same results? What does this mean? Value: " << total << " indices:\n" << i << " " << j << " " << k << std::endl;
+                    std::cout << Xa << " " << Xb << " " << Xc << " " << "\n\n";
+                }
                 if (total < closestToI) {
                     if (total < 1000) std::cout <<"If this number is 0, it's the I shape: " << total << std::endl;
 

@@ -302,7 +302,33 @@ Largest:Center Top
 Sum: 11628577404900 Goal Sum/9==x*9: 1292064156100 - 1292064156100 = 0
 
 Index: 3648795 had a near miss bot row: 69120
+1216265 - We found that this number had a near miss of 7620 and the above number was a multiple of this.
+Factors: 5, 17, 41, 85, 205, 349, 697, 1745, 3485, 5933, 14309, 29665, 71545, 243253
 
+Near misses from Chris:
+Index: 2968810 had a near miss bot row: 1274592
+Index: 2987725 had a near miss bot row: 1067664
+Index: 3084250 had a near miss bot row: 3405024
+Index: 3109215 had a near miss bot row: 484272
+Index: 3236545 had a near miss bot row: 2622360
+
+
+
+Near misses from bounding by 697.
+Index: 4865060 had a near miss bot row:  122880
+Index: 6081325 had a near miss bot row:  192000
+Index: 7297590 had a near miss bot row:  276480
+Index: 8513855 had a near miss bot row:  376320
+Index: 9730120 had a near miss bot row:  491520
+Index: 10946385 had a near miss bot row: 622080
+Index: 12162650 had a near miss bot row: 768000
+Index: 13378915 had a near miss bot row: 929280
+
+near misses bounding by 85
+Index: 4865060 had a near miss bot row: 122880
+Index: 6081325 had a near miss bot row: 192000
+Index: 7297590 had a near miss bot row: 276480
+Index: 8513855 had a near miss bot row: 376320
 
 
 

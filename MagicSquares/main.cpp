@@ -20,10 +20,9 @@ void ProcessAllNumbersInAFile(std::string_view fileName);
  */
 
 //Make this an mpz_int
-unsigned int g_howMany = 429496729/10; //429496729 is Roughly 59GB of data. Divide by 10 for now.
+unsigned int g_howMany = 429496729/2; //429496729 is Roughly 59GB of data. Divide by 10 for now.
 
 int main(int argc, char **argv) {
-
     std::string_view fileParamPrefix = "--file=";
     for (int i = 1; i < argc; i++) {
         std::string_view arg = argv[i];
@@ -39,6 +38,13 @@ int main(int argc, char **argv) {
         //Ask Chris for more info on params
     }
 
+    //https://www.calculatorsoup.com/calculators/math/prime-number-calculator.php
+    // const unsigned int val = 1216265;
+    // std::cout << val << std::endl;
+    // for (unsigned int i = 2; i < val/2; i++) {
+    //     if (val % i == 0) { std::cout << i << std::endl;}
+    // }return 0;
+
     // GetInfoOnMagicSquares(1000, 223, 444); return 0;
 
     // Try to find a way to input a number and find two more square numbers that add to a 4th square?
@@ -50,14 +56,20 @@ int main(int argc, char **argv) {
     mpz_only temp(g_howMany); //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     // temp.isOneDouble(1000); return 0;
-    //temp.PrintAllDataGivenAValue(3648795); return 0;//1136690
+    // for (unsigned int i = 1; i < 20; i++) {
+    //     mpz_int checkMe = 8258753;
+    //     std::cout << checkMe*i << " - " << temp.PrintAllDataGivenAValue(checkMe*i, false) << std::endl;
+    // }
+    // return 0;//1136690
     //  1 - 4064125 - Suspicious. havent seen an indicator that any number met or exceeded 67 equidistants from 226525 to 292030?
     //BUT we were already seeing gaps from 160225 to 204425 and then to 226525
     // 17 - 6985810
     // 29 - 4064125
     // 37 - 4064125
-    temp.setStartingValueAndBounding(4064125, 37);
-    //Wanted to test 5107973 from https://oeis.org/A097282 - Got the expected 40 vals pretty quickly but the drop-off in time to calculate 1000 is unknown.
+    // 85 - 9592250 17*5
+    // 697 - 57185365  least common denominator between 17 and 41 which keeps coming up as a factor of the more interesting near misses.
+    temp.setStartingValueAndBounding(4064125, 85);
+    //Wanted to test 5107973 from https://oeis.org/A097282
     temp.makeThreadsAndCalculate();
     //temp.start();
 
