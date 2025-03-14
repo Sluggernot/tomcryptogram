@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     //New attempt is close to a copy of Attempt 2 but we're using all mpzs, we're going to calculate if we need more values in the set and add them, etc.
     //So, we're using set indexing for calcs. And will have a bounding value, where we += bounding_val
     //We will consider finding a 6th square value a massive win!
-    mpz_only temp(g_howMany); //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
+    mpz_only temp; //Roughly 59GB of data if I don't divide howMany. Plenty of room to find a magic square of squares.
     std::cout << "Data initialized" << std::endl;
     // temp.isOneDouble(1000); return 0;
     // for (unsigned int i = 1; i < 20; i++) {
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 }
 
 void ProcessAllNumbersInAFile(std::string_view fileName) {
-    mpz_only temp(g_howMany);
+    mpz_only temp;
     std::cout << "Data initialized" << std::endl;
     std::fstream file;
     file.open(fileName.data(), std::ios::in);

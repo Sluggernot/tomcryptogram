@@ -14,20 +14,7 @@ bool isASquare(const mpz_int& testMe) {
     return testMe == root*root;
 }
 
-mpz_only::mpz_only(const unsigned long long howMany) {
-    std::cout << "Map max size: " << squares_set.max_size() << std::endl;
-    std::cout << "Inserting   : " << howMany << std::endl;
-    mpz_int squareRoot = 0;
-    mpz_int squareVal = 0;
-    maxValInContainer = howMany;
-    for (unsigned long long i = 0; i < howMany; i++) {
-        squareRoot = i;
-        squareVal = squareRoot * squareRoot;
-        squares_set[squareRoot] = squareVal;
-    }
-    std::cout << "Squares_set size: " << squares_set.size() << std::endl;
-    std::cout << "SANITY CHECK: " << isASquare(squares_set.at(squares_set.size()-1)) << std::endl;
-    std::cout << "SANITY CHECK: " << (((howMany/2) * (howMany/2)) == squares_set.at(howMany/2)) << std::endl;
+mpz_only::mpz_only() {
     //Just in case.
     currentVal = 1;
     boundingVal = 1;
@@ -49,25 +36,26 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
     }
 }
 
-void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set) {
+void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     equidistPairs.clear();
-    if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
+    //if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
     //The real limit is 2.414 * index but we can live with this.
-    if (index * 2 > squares_set->crbegin()->first) {std::cout << "We have exceeded the limit of our map: " << index << std::endl; return;}
+    //if (index * 2 > squares_set->crbegin()->first) {std::cout << "We have exceeded the limit of our map: " << index << std::endl; return;}
 
     //About to make changes to try add instead?
-    const mpz_int twoX = squares_set->at(index) * 2;
+    const mpz_int twoX = index*index * 2;
     mpz_int iterR = index+1;
     mpz_int iterL = index;
 
-    mpz_int iterRv = squares_set->at(iterR);
+    mpz_int iterRv = iterR*iterR;
     while (iterRv < twoX) {
-        while (iterL >= 0 && twoX < squares_set->at(--iterL) + iterRv) {}
+        while (iterL >= 0 && twoX < iterL*iterL + iterRv) {--iterL;}
         if (iterL < 0) { break; }
-        if (squares_set->at(iterL) + iterRv == twoX) {
-            equidistPairs.emplace_back(squares_set->at(iterL), iterRv);
+        if (iterL*iterL + iterRv == twoX) {
+            equidistPairs.emplace_back(iterL*iterL, iterRv);
         }
-        iterRv = squares_set->at(++iterR);//If it dies we were out of values.
+        ++iterR;
+        iterRv = iterR*iterR;//If it dies we were out of values.
         // if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
     }
 }
@@ -101,7 +89,7 @@ void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
 }
 
 void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
-    findAllEquidistantValues(index, equidistant_vals, &squares_set);
+    findAllEquidistantValues(index, equidistant_vals);
     if (equidistant_vals.size() >= mostEquidistants) {
         std::cout << "Met or exceeded highest equidistant count: " << index << "," << index*index << "," << equidistant_vals.size() << \
             " Largest value: " << equidistant_vals.at(equidistant_vals.size()-1).second <<  std::endl;
@@ -112,7 +100,7 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
-    if (equidistPairs.size() > 67) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
+    if (equidistPairs.size() > 200) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
 #ifdef TEST1
     //I was able to prove this is bad for testing. The distance between all teh values does NOT have to be the same.
@@ -151,7 +139,7 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
             for (int k = j-1; k > 1; k--) {
-                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < 1000000) {
+                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < index/10) {
                     std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
                 }
                 if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
@@ -176,7 +164,6 @@ void mpz_only::makeThreadsAndCalculate() {
 
     //Make them all point to the precalculated data.
     for (int i = 0; i < threadCount; i++) {
-        worker_thread[i].t_squares_set_ptr = &squares_set;
         worker_thread[i].t_threadNum = i;
     }
     std::cout << "Data is set." << std::endl;
@@ -187,7 +174,7 @@ void mpz_only::makeThreadsAndCalculate() {
 //            if (++worker.t_threadIterCounter % 1000==0){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
 
             returnWorkerValAndReadyNext(worker.t_currentVal);
-            findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals, worker.t_squares_set_ptr);
+            findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals);
             if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals)) {
                 std::cout << "found one" <<std::endl;
                 break;
@@ -207,10 +194,10 @@ void mpz_only::makeThreadsAndCalculate() {
 
 mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=true*/) {
 
-    findAllEquidistantValues(index, equidistant_vals, &squares_set);
+    findAllEquidistantValues(index, equidistant_vals);
     if (equidistant_vals.size() < 4) {std::cout << "Not enough equidistant vals to make anything. "; return 0; }
     if (bPrint) {
-        std::cout <<"\nIndex: " << index << " Value: " << squares_set.at(index) << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
+        std::cout <<"\nIndex: " << index << " Value: " << index*index << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
         mpf_float valueF = index*index;
         std::vector<mpf_float> ratios;
 
@@ -227,7 +214,7 @@ mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=tr
         //    return;
         std::cout << "Now searching for closest to magic square\n";
     }
-    const mpz_int& x = squares_set.at(index);
+    const mpz_int& x = index*index;
     const mpz_int threex = x+x+x;
 
     mpz_int closestToI = equidistant_vals.at(equidistant_vals.size()-1).second;
@@ -313,32 +300,32 @@ mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=tr
 
 void mpz_only::isOneDouble(const mpz_int& startingPlace = 0) const {
 
-    mpz_int closest_diff = 1;//squares_set.at(maxValInContainer-1); //Stupidly large number to start with
-    //mpz_int temp_diff = squares_set.at(maxValInContainer-1); //Stupidly large number to start with
-    mpz_int closestIdxHalf = 0;
-    mpz_int closestIdxDoub = 0;
-
-    mpz_int startingPoint = 10;
-    if (startingPlace > 10) { startingPoint = startingPlace; }
-    for (mpz_int i = startingPoint; i < squares_set.size(); ++i ) {
-        const mpz_int twoTimes = squares_set.at(i)*2;
-        for (mpz_int j = i+1; j < squares_set.size(); ++j) {
-            if (squares_set.at(j) > twoTimes+twoTimes/4) { break; } //Some arbitrary allowance to go over but not go to end of all squares.
-            if (squares_set.at(j) == twoTimes) { //Impossible. This is more of a sanity check.
-                std::cout << "Wtf? Exactly double? Index: " << i << " is half of index: " << j << std::endl;
-                return;
-            }
-            if (abs(squares_set.at(j) - twoTimes) <= closest_diff) {
-                closest_diff = abs(squares_set.at(j) - twoTimes);
-                closestIdxHalf = i;
-                closestIdxDoub = j;
-                std::cout << "Half: idx: " << i << " val: " << squares_set.at(i) << " It's doub: idx:" << j << " val: " << squares_set.at(j) << " ValDiff: " << squares_set.at(j) - twoTimes << std::endl;
-                i = i*2 + (i/10*4);//sqrt(squares_set.at(i)*5);
-                break;
-            }
-        }
-    }
-    if (closestIdxHalf == startingPlace) { std::cout << "Start and closest to half were the same \n"; }
-    std::cout << "Closest indices to being double: " << closestIdxHalf << " roughly half of idx: " << closestIdxDoub << "  with a diff of ";
-    std::cout << abs(squares_set.at(closestIdxHalf) *2 - squares_set.at(closestIdxDoub)) << " " << std::endl;
+    // mpz_int closest_diff = 1;//squares_set.at(maxValInContainer-1); //Stupidly large number to start with
+    // //mpz_int temp_diff = squares_set.at(maxValInContainer-1); //Stupidly large number to start with
+    // mpz_int closestIdxHalf = 0;
+    // mpz_int closestIdxDoub = 0;
+    //
+    // mpz_int startingPoint = 10;
+    // if (startingPlace > 10) { startingPoint = startingPlace; }
+    // for (mpz_int i = startingPoint; i < squares_set.size(); ++i ) {
+    //     const mpz_int twoTimes = squares_set.at(i)*2;
+    //     for (mpz_int j = i+1; j < squares_set.size(); ++j) {
+    //         if (squares_set.at(j) > twoTimes+twoTimes/4) { break; } //Some arbitrary allowance to go over but not go to end of all squares.
+    //         if (squares_set.at(j) == twoTimes) { //Impossible. This is more of a sanity check.
+    //             std::cout << "Wtf? Exactly double? Index: " << i << " is half of index: " << j << std::endl;
+    //             return;
+    //         }
+    //         if (abs(squares_set.at(j) - twoTimes) <= closest_diff) {
+    //             closest_diff = abs(squares_set.at(j) - twoTimes);
+    //             closestIdxHalf = i;
+    //             closestIdxDoub = j;
+    //             std::cout << "Half: idx: " << i << " val: " << squares_set.at(i) << " It's doub: idx:" << j << " val: " << squares_set.at(j) << " ValDiff: " << squares_set.at(j) - twoTimes << std::endl;
+    //             i = i*2 + (i/10*4);//sqrt(squares_set.at(i)*5);
+    //             break;
+    //         }
+    //     }
+    // }
+    // if (closestIdxHalf == startingPlace) { std::cout << "Start and closest to half were the same \n"; }
+    // std::cout << "Closest indices to being double: " << closestIdxHalf << " roughly half of idx: " << closestIdxDoub << "  with a diff of ";
+    // std::cout << abs(squares_set.at(closestIdxHalf) *2 - squares_set.at(closestIdxDoub)) << " " << std::endl;
 }

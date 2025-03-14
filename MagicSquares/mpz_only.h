@@ -19,7 +19,6 @@ struct mpz_threadWorker {
     mpz_threadWorker()=default;
     ~mpz_threadWorker()=default;
     std::thread t_worker_thread;
-    const std::map<mpz_int, mpz_int>* t_squares_set_ptr= nullptr;
     std::vector<std::pair<mpz_int, mpz_int>> t_equidistant_vals;
     mpz_int t_currentVal = 0;
     int t_threadIterCounter = 0;
@@ -28,9 +27,8 @@ struct mpz_threadWorker {
 
 class mpz_only {
 
-    std::map<mpz_int, mpz_int> squares_set;
     std::vector<std::pair<mpz_int, mpz_int>> equidistant_vals;
-    mpz_int currentVal, boundingVal, maxValInContainer;
+    mpz_int currentVal, boundingVal;
     bool quit = false;
     std::atomic<int> counter = 0;
     unsigned long mostEquidistants = 41;
@@ -40,11 +38,11 @@ class mpz_only {
 
 public:
 
-    explicit mpz_only(const unsigned long long howMany = 0);
+    explicit mpz_only();
 
     void setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding);
 
-    static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, const std::map<mpz_int, mpz_int>* squares_set);
+    static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
     static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
 
     void start();
