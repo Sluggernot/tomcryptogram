@@ -1,4 +1,5 @@
 
+#include <charconv>
 #include <fstream>
 #include <iostream>
 
@@ -15,26 +16,75 @@ void GetInfoOnMagicSquares(int center_num, const int testA = 0, const int testB 
 
 void ProcessAllNumbersInAFile(std::string_view fileName);
 
-/* Right now I don't care about a ton of argument possibilities
- * --file=Somefilename.txt
- */
-
-//Make this an mpz_int
-unsigned int g_howMany = 429496729/2; //429496729 is Roughly 59GB of data. Divide by 10 for now.
+void PrintHelp();
 
 int main(int argc, char **argv) {
+    int numThreads = 1;
+    int startingNum = 1000;
+    int boundingNum = 1; //Only test every 17th num. Program makes sure we are on a multiple of this number
+    bool adjustStartByModBounding = true;
+    int maxValue = -1;
+
+    std::string_view helpPrefix = "--file=";
     std::string_view fileParamPrefix = "--file=";
+    std::string_view threadCountPrefix = "--j=";
+    std::string_view startNumPrefix = "--start=";
+    std::string_view boundingNumPrefix = "--bound=";
+    std::string_view detailsPrefix = "--details=";
+    std::string_view adjustPrefix = "--dontAdjust";
+    std::string_view maxValuePrefix = "--maxValue=";
+
+    //Good if I release this code. I still want to just be able to run ./MagicSquares and go. Should probably just use my program as is... idk.
+    // if (argc < 2) {
+    //     PrintHelp();
+    //     return 0;
+    // }
+
     for (int i = 1; i < argc; i++) {
         std::string_view arg = argv[i];
+
+        if (arg.starts_with(helpPrefix)) {
+            PrintHelp();
+            return 0;
+        }
+        if (arg.starts_with(adjustPrefix)) {
+            adjustStartByModBounding = false;
+        }
         if (arg.starts_with(fileParamPrefix)) {
             const std::string_view fileName = arg.substr(fileParamPrefix.size());
             ProcessAllNumbersInAFile(fileName);
             return 0;
         }
-        //Set thread count
-        //Allow input of starting value
-        //Allow input of number of squares to put into map - Probably can convert map back to vector with our implementation. Faster?
+        if (arg.starts_with(threadCountPrefix)) {
+            const std::string_view sv = arg.substr(threadCountPrefix.size());
+            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), numThreads);
+            std::cout << "Thread count: " <<  sv << " should be same as: " << numThreads << std::endl;
+        }
+        if (arg.starts_with(startNumPrefix)) {
+            const std::string_view sv = arg.substr(startNumPrefix.size());
+            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), startingNum);
+            std::cout << "Starting number: " <<  sv << " should be same as: " << startingNum << std::endl;
+        }
+        if (arg.starts_with(boundingNumPrefix)) {
+            const std::string_view sv = arg.substr(boundingNumPrefix.size());
+            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), boundingNum);
+            std::cout << "Bounding by: " <<  sv << " should be same as: " << boundingNum << std::endl;
+        }
+        if (arg.starts_with(maxValuePrefix)) {
+            const std::string_view sv = arg.substr(maxValuePrefix.size());
+            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), maxValue);
+            std::cout << "Bounding by: " <<  sv << " should be same as: " << maxValue << std::endl;
+        }
+        if (arg.starts_with(detailsPrefix)) {
+            const std::string_view sv = arg.substr(detailsPrefix.size());
+            int indexToCheck = 1000;
+            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), indexToCheck);
+            mpz_only temp;
+            temp.PrintAllDataGivenAValue(indexToCheck, true);
+            return 0;
+        }
 
+        //Print equidistant pairs for a given number? List?
         //Ask Chris for more info on params
     }
 
@@ -68,10 +118,14 @@ int main(int argc, char **argv) {
     // 37 - 4064125
     // 85 - 9592250 17*5
     // 697 - 57185365  least common denominator between 17 and 41 which keeps coming up as a factor of the more interesting near misses.
-    temp.setStartingValueAndBounding(9592250, 85);
+    temp.setStartingValueAndBounding(startingNum, boundingNum, maxValue, adjustStartByModBounding);
     //Wanted to test 5107973 from https://oeis.org/A097282
-    temp.makeThreadsAndCalculate();
-    //temp.start();
+    if (numThreads > 1) {
+        temp.makeThreadsAndCalculate(numThreads);
+    }
+    else {
+        temp.start();
+    }
 
     //Oh, right. So what holds true between LoShu and HiShu? 1 and 9 with the B diag, right?
 
@@ -285,6 +339,11 @@ void GetInfoOnMagicSquares(const int center_num, const int testA, const int test
 
     std::cout << "Take b back down to 4: LoShus: " << LoShuCount << " HiShus: " << HiShuCount << " out of: " << total << std::endl;
 }
+
+void PrintHelp() {
+
+}
+
 
 // void someGMPexamples() {
 //

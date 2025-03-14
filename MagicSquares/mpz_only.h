@@ -28,11 +28,9 @@ struct mpz_threadWorker {
 class mpz_only {
 
     std::vector<std::pair<mpz_int, mpz_int>> equidistant_vals;
-    mpz_int currentVal, boundingVal;
-    bool quit = false;
+    mpz_int currentVal, boundingVal, maxVal;
     std::atomic<int> counter = 0;
-    unsigned long mostEquidistants = 41;
-    unsigned int threadNum = 1;
+    unsigned long mostEquidistants = 1;
 
     std::stringstream fileOutput;
 
@@ -40,23 +38,26 @@ public:
 
     explicit mpz_only();
 
-    void setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding);
+    void setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding, const mpz_int& max,  bool adjustStart);
 
     static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
     static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
 
     void start();
 
-    void returnWorkerValAndReadyNext(mpz_int& index);
-    void makeThreadsAndCalculate();
+    [[nodiscard]] bool returnWorkerValAndReadyNext(mpz_int& index);
+    void makeThreadsAndCalculate(const int howManyThreads);
 
-    //Just want to see any patterns possible with
     mpz_int PrintAllDataGivenAValue(const mpz_int& index, bool bPrint = true);
 
+    //Deprecated logic I used to find squares that were near double/half another square
     void isOneDouble(const mpz_int& startingPlace) const;
 
 private:
     void GivenAnIndexTestValue(const mpz_int& index);
+
+    //If we return false, quit
+    bool advanceTheCurrentVal();
 };
 
 #endif //MPZ_ONLY_H

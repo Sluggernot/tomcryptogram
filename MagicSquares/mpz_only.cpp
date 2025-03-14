@@ -18,17 +18,19 @@ mpz_only::mpz_only() {
     //Just in case.
     currentVal = 1;
     boundingVal = 1;
+    maxVal = -1;
 }
 
-void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding) {
+void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding, const mpz_int& max, bool adjustStart) {
     boundingVal = bounding;
     currentVal = starting;
+    maxVal = max;
 
     if (boundingVal < 1) {boundingVal = 1;}
     if (currentVal < 1) {currentVal = 1;}
-    if (currentVal < boundingVal) {currentVal = boundingVal;}
+    //if (currentVal < boundingVal) {currentVal = boundingVal;}
     std::cout << "Starting value: " << currentVal << " Bounding: " << boundingVal << std::endl;
-    if (currentVal % boundingVal != 0) {
+    if (adjustStart && currentVal % boundingVal != 0) {
         currentVal = currentVal - (currentVal % boundingVal);
         if (currentVal % boundingVal != 0) { std::cout << "SANITY CHECK: I forgot how modulus worked?" << std::endl; }
 
@@ -38,11 +40,7 @@ void mpz_only::setStartingValueAndBounding(const mpz_int& starting, const mpz_in
 
 void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
     equidistPairs.clear();
-    //if (!squares_set->contains(index)) {std::cout << "Index not found: " << index << std::endl; return;}
-    //The real limit is 2.414 * index but we can live with this.
-    //if (index * 2 > squares_set->crbegin()->first) {std::cout << "We have exceeded the limit of our map: " << index << std::endl; return;}
 
-    //About to make changes to try add instead?
     const mpz_int twoX = index*index * 2;
     mpz_int iterR = index+1;
     mpz_int iterL = index;
@@ -55,26 +53,31 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
             equidistPairs.emplace_back(iterL*iterL, iterRv);
         }
         ++iterR;
-        iterRv = iterR*iterR;//If it dies we were out of values.
-        // if (!squares_set->contains(iterR)) { std::cout << "WRITE CODE FOR EXPANDING MAP SIZE!" << iterR << std::endl; return;}
+        iterRv = iterR*iterR;
     }
+}
+
+bool mpz_only::advanceTheCurrentVal() {
+    currentVal+=boundingVal;
+    if (counter % 10000 == 0) { std::cout << currentVal << std::endl; } //So I can have some idea of where to pick up.
+    return maxVal != -1 && currentVal <= maxVal;
 }
 
 void mpz_only::start() {
-    while (!quit) {
-        GivenAnIndexTestValue(currentVal);
+    while (true) {
+        //GivenAnIndexTestValue(currentVal);
+        findAllEquidistantValues(currentVal, equidistant_vals);
         if (testEquidistantValsForSquares(currentVal, equidistant_vals)) {break;};
-        currentVal+=boundingVal;
-
         ++counter;
-        if (counter % 1000 == 0) { std::cout << currentVal << std::endl; } //So I can have some idea of where to pick up.
+        if (!advanceTheCurrentVal()) return;
     }
 }
 
-void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
+bool mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
     ++counter;
-    //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples.
+    //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples. Basically, the behavior of square values is volatile.
+    //Make sure all threads are initialized before basically free threading.
     // if (counter > threadNum) {
     //     if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
     //     index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
@@ -82,10 +85,10 @@ void mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     // }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
+    if (advanceTheCurrentVal()) return false;
     const auto ret = currentVal;
-    currentVal += boundingVal;
-    if (counter % 1000 == 0) { std::cout << currentVal << std::endl; }
     index = ret;
+    return true;
 }
 
 void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
@@ -95,7 +98,6 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
             " Largest value: " << equidistant_vals.at(equidistant_vals.size()-1).second <<  std::endl;
         mostEquidistants = equidistant_vals.size();
     }
-    //fileOutput << index << "," << index*index << "," << equidistant_vals.size() << ",";
 }
 
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
@@ -156,24 +158,20 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
     return false;
 }
 
-void mpz_only::makeThreadsAndCalculate() {
+void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
     std::cout << "About to make the workers." << std::endl;
-    constexpr int threadCount = 14;
-    mpz_threadWorker worker_thread[threadCount];
+    mpz_threadWorker worker_thread[howManyThreads];
     std::cout << "Starting threads..." << std::endl;
 
     //Make them all point to the precalculated data.
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 0; i < howManyThreads; i++) {
         worker_thread[i].t_threadNum = i;
     }
     std::cout << "Data is set." << std::endl;
 
     auto lambda = [this](mpz_threadWorker& worker) {
-        while (true)
+        while (returnWorkerValAndReadyNext(worker.t_currentVal))
         {
-//            if (++worker.t_threadIterCounter % 1000==0){ std::cout << "Thread " << worker.t_threadNum << " did 1000: on index: " << worker.t_currentVal << std::endl;}
-
-            returnWorkerValAndReadyNext(worker.t_currentVal);
             findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals);
             if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals)) {
                 std::cout << "found one" <<std::endl;
@@ -181,12 +179,12 @@ void mpz_only::makeThreadsAndCalculate() {
             }
         }
     };
-    threadNum = threadCount;
-    for (int i = 0; i < threadCount; i++) {
+
+    for (int i = 0; i < howManyThreads; i++) {
         worker_thread[i].t_worker_thread = std::thread(lambda, std::ref(worker_thread[i]));
     }
     std::cout << "Threads are ready." << std::endl;
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 0; i < howManyThreads; i++) {
         worker_thread[i].t_worker_thread.join();
     }
     std::cout << "Threads are done." << std::endl;

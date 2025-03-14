@@ -16,7 +16,7 @@ void MagicSquare_data::printMagicSquare() const {
 
 void MagicSquare_data::printMagicSquare_withSums(const bool diags) const {
     mpz_int sum = 0;
-    mpz_int sumOfSums = 0;
+    mpz_int sumOfSums = 0;//Deprecated but doesnt hurt to leave for now.
 
     for (int i = 0; i < 9; i++) {
         std::cout << square_arr[i].second << "\t ";
@@ -39,9 +39,6 @@ void MagicSquare_data::printMagicSquare_withSums(const bool diags) const {
         sumOfSums += sum;
         std::cout << sum << std::endl;
     }
-    //Each sum should be x*3. 8 sums should be x*24.
-    std::cout << "Goal sum of all sums/24 == x: " << sumOfSums/24 << " == " << square_arr[4].second << " difference of: " << \
-     abs(sumOfSums/24-square_arr[4].second) << std::endl;
 }
 
 char MagicSquare_data::printLocation(const int index) const {

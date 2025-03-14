@@ -330,6 +330,18 @@ Index: 6081325 had a near miss bot row: 192000
 Index: 7297590 had a near miss bot row: 276480
 Index: 8513855 had a near miss bot row: 376320
 
+2,432,530 - 30720 - Bro wtf is this? This is from the list of 40s that I have.
+Index: 10946385 had a near miss bot row: 622080
+Index: 13378915 had a near miss bot row: 929280
+Index: 14595180 had a near miss bot row: 1105920
+Index: 15811445 had a near miss bot row: 1297920
+Index: 17027710 had a near miss bot row: 1505280
+Index: 18243975 had a near miss bot row: 1728000
+Index: 18472285 had a near miss bot row: 948024
+Index: 18943525 had a near miss bot row: 365856
+Index: 12162650 had a near miss bot row: 768000
+Index: 26989625 had a near miss bot row: 1366848
+
 
 
 -- This is why the threads can't simply bound on their own -- They diverge quickly
