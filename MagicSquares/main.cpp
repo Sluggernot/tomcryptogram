@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     // 37 - 4064125
     // 85 - 9592250 17*5
     // 697 - 57185365  least common denominator between 17 and 41 which keeps coming up as a factor of the more interesting near misses.
-    temp.setStartingValueAndBounding(4064125, 85);
+    temp.setStartingValueAndBounding(9592250, 85);
     //Wanted to test 5107973 from https://oeis.org/A097282
     temp.makeThreadsAndCalculate();
     //temp.start();
