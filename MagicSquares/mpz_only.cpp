@@ -65,7 +65,7 @@ bool mpz_only::advanceTheCurrentVal() {
 
 void mpz_only::start() {
     while (true) {
-        //GivenAnIndexTestValue(currentVal);
+        //GivenAnIndexTestValue(currentVal); //Would only use if I wanted single threaded to have special output?
         findAllEquidistantValues(currentVal, equidistant_vals);
         if (testEquidistantValsForSquares(currentVal, equidistant_vals)) {break;};
         ++counter;
@@ -85,7 +85,7 @@ bool mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
     // }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
-    if (advanceTheCurrentVal()) return false;
+    if (!advanceTheCurrentVal()) return false;
     const auto ret = currentVal;
     index = ret;
     return true;
@@ -183,7 +183,7 @@ void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
     for (int i = 0; i < howManyThreads; i++) {
         worker_thread[i].t_worker_thread = std::thread(lambda, std::ref(worker_thread[i]));
     }
-    std::cout << "Threads are ready." << std::endl;
+    std::cout << "Threads are processing." << std::endl;
     for (int i = 0; i < howManyThreads; i++) {
         worker_thread[i].t_worker_thread.join();
     }
@@ -192,12 +192,13 @@ void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
 
 mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=true*/) {
 
+    std::cout << "Printing all values for "<< index << std::endl;
     findAllEquidistantValues(index, equidistant_vals);
     if (equidistant_vals.size() < 4) {std::cout << "Not enough equidistant vals to make anything. "; return 0; }
     if (bPrint) {
         std::cout <<"\nIndex: " << index << " Value: " << index*index << "  Equidistant count: " <<  equidistant_vals.size() << "\n\n";
         mpf_float valueF = index*index;
-        std::vector<mpf_float> ratios;
+        std::vector<mpf_float> ratios; //why did I put these in a vector?
 
         for (int i = 0; i < equidistant_vals.size(); i++) {
             mpz_int& lVal = equidistant_vals[i].first;
@@ -213,15 +214,12 @@ mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=tr
         std::cout << "Now searching for closest to magic square\n";
     }
     const mpz_int& x = index*index;
-    const mpz_int threex = x+x+x;
+    const mpz_int threex = x*3;
 
     mpz_int closestToI = equidistant_vals.at(equidistant_vals.size()-1).second;
     mpz_int closestToAll = equidistant_vals.at(equidistant_vals.size()-1).second;
     mpz_int total = x*3;//equidistant_vals.at(equidistant_vals.size()-1).second;
-    mpz_int closestA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
-    mpz_int totalA = 0;//equidistant_vals.at(equidistant_vals.size()-1).second;
     int Xa, Xb, Xc, Xd;
-    int XAa, XAb, XAc, XAd;
 
     for(int i = equidistant_vals.size()-1; i >= 2; i--) {
         const mpz_int botCenter = equidistant_vals.at(i).first;
@@ -252,48 +250,27 @@ mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=tr
                             Xa = i; Xb = j; Xc = k; Xd = l;
                             closestToAll=howClose;
                         }
-                        //"Closest" could be where top/bot row and left/right col are closest to a total of 12x?
-                        //Also make an: x + a - b + PlusAMinusB - 3x closest to 0 total and shit and see if theyre the same
-                        // totalA = abs(threex - PlusAPlusB - equidistant_vals.at(k).first);
-                        // totalA += abs(threex - MinusAMinusB + equidistant_vals.at(l).first);
-                        // if (closestA == 0 || totalA < closestA) {
-                        //     closestA = totalA;
-                        //     XAa = i; XAb = j; XAc = k; XAd = l;
-                        // }
                     }
                 }
             }
         }
     }
 
-    // if (Xa != XAa || Xb != XAb || Xc != XAc || Xd != XAd) {
-    //     std::cout << "Some indices didnt match both tests?! : " << Xa << " " << XAa << " - " \
-    //     << Xb << " " << XAb << " - " << Xc << " " << XAc << " - " << Xd << " " << XAd << std::endl;
-    //     didntMatch = true;
-    // }
     mpz_int howClose = abs(threex - equidistant_vals.at(Xb).first - equidistant_vals.at(Xa).second - equidistant_vals.at(Xc).first);
     if (bPrint) {
         std::cout <<"\nIndices: " << "A: " << Xa << " B: " << Xb << " C: " << Xc << " Xd: " << Xd << std::endl;
         const MagicSquare_data checkMe(
                         equidistant_vals.at(Xb).first, equidistant_vals.at(Xa).second, equidistant_vals.at(Xc).first,
-                        equidistant_vals.at(Xd).first, x,                              equidistant_vals.at(Xd).second,
+                        equidistant_vals.at(Xd).second,x,                              equidistant_vals.at(Xd).first,
                         equidistant_vals.at(Xc).second,equidistant_vals.at(Xa).first,  equidistant_vals.at(Xb).second);
         checkMe.printMagicSquare_withSums(true);
-        std::cout << "\nHow close are we to a magic square: " << howClose << std::endl;
+        std::cout << "\nHow close are we to a magic square by top/bot row to 3xCenter: " << howClose << std::endl;
+
+        mpz_int leftCol  = abs(threex - equidistant_vals.at(Xb).first - equidistant_vals.at(Xd).second - equidistant_vals.at(Xc).second);
+        std::cout << "\nL/R column difference to 3x: " << leftCol << std::endl;
     }
 
     return howClose;
-
-    //checkMe.printMagicSquareDetails();
-
-    // std::cout <<"\nIndices: " << "A: " << XAa << " B: " << XAb << " C: " << XAc << " Xd: " << XAd << std::endl;
-    // const MagicSquare_data checkMe2(
-    //                 equidistant_vals.at(XAa).first, equidistant_vals.at(XAd).second, equidistant_vals.at(XAb).first,
-    //                 equidistant_vals.at(XAc).first, x,                               equidistant_vals.at(XAc).second,
-    //                 equidistant_vals.at(XAb).second, equidistant_vals.at(XAd).first, equidistant_vals.at(XAa).second);
-    // checkMe2.printMagicSquare_withSums(true);
-    // checkMe2.printMagicSquareDetails();
-
 }
 
 void mpz_only::isOneDouble(const mpz_int& startingPlace = 0) const {

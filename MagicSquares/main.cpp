@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
         }
         if (arg.starts_with(detailsPrefix)) {
             const std::string_view sv = arg.substr(detailsPrefix.size());
-            int indexToCheck = 1000;
-            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), indexToCheck);
+            mpz_int indexToCheck(sv);
+            //auto result = std::from_chars(sv.data(), sv.data() + sv.size(), indexToCheck);
             mpz_only temp;
             temp.PrintAllDataGivenAValue(indexToCheck, true);
             return 0;
