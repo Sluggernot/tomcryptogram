@@ -60,7 +60,7 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
 bool mpz_only::advanceTheCurrentVal() {
     currentVal+=boundingVal;
     if (counter % 10000 == 0) { std::cout << currentVal << std::endl; } //So I can have some idea of where to pick up.
-    return maxVal != -1 && currentVal <= maxVal;
+    return maxVal == -1 || currentVal <= maxVal;
 }
 
 void mpz_only::start() {
@@ -74,15 +74,7 @@ void mpz_only::start() {
 }
 
 bool mpz_only::returnWorkerValAndReadyNext(mpz_int& index) {
-    //Consider just bounding self here. No mutex lock. So if I start with INDEX and += bounding. I can't match some other value. Except where bounding < thread count?
     ++counter;
-    //This is "faster" but certain threads in specific multiples can lag WAY behind other threads with simpler multiples. Basically, the behavior of square values is volatile.
-    //Make sure all threads are initialized before basically free threading.
-    // if (counter > threadNum) {
-    //     if (index % 1000 == 0) { std::cout << index << " about to do: " << index+boundingVal*threadNum << std::endl; }
-    //     index = index+boundingVal*threadNum;//Everyone is boundingVal*threads apart.
-    //     return;
-    // }
 
     std::unique_lock<std::mutex> lock(mpzOnlyMutex);
     if (!advanceTheCurrentVal()) return false;
@@ -162,6 +154,7 @@ void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
     std::cout << "About to make the workers." << std::endl;
     mpz_threadWorker worker_thread[howManyThreads];
     std::cout << "Starting threads..." << std::endl;
+    threadCount = howManyThreads;
 
     //Make them all point to the precalculated data.
     for (int i = 0; i < howManyThreads; i++) {
@@ -191,8 +184,6 @@ void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
 }
 
 mpz_int mpz_only::PrintAllDataGivenAValue(const mpz_int &index, bool bPrint/*=true*/) {
-
-    std::cout << "Printing all values for "<< index << std::endl;
     findAllEquidistantValues(index, equidistant_vals);
     if (equidistant_vals.size() < 4) {std::cout << "Not enough equidistant vals to make anything. "; return 0; }
     if (bPrint) {

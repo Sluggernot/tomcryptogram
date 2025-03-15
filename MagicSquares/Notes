@@ -342,6 +342,8 @@ Index: 18943525 had a near miss bot row: 365856
 Index: 12162650 had a near miss bot row: 768000
 Index: 26989625 had a near miss bot row: 1366848
 
+The only other near miss from 3000 to 2million
+Index: 1036405 had a near miss bot row: 53808
 
 
 -- This is why the threads can't simply bound on their own -- They diverge quickly

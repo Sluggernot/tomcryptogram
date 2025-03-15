@@ -21,11 +21,11 @@ void PrintHelp();
 int main(int argc, char **argv) {
     int numThreads = 1;
     int startingNum = 1000;
-    int boundingNum = 1; //Only test every 17th num. Program makes sure we are on a multiple of this number
+    int boundingNum = 1;
     bool adjustStartByModBounding = true;
     int maxValue = -1;
 
-    std::string_view helpPrefix = "--file=";
+    std::string_view helpPrefix = "--help=";
     std::string_view fileParamPrefix = "--file=";
     std::string_view threadCountPrefix = "--j=";
     std::string_view startNumPrefix = "--start=";
