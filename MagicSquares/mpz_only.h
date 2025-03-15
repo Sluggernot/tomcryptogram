@@ -31,7 +31,6 @@ class mpz_only {
     mpz_int currentVal, boundingVal, maxVal;
     std::atomic<int> counter = 0;
     unsigned long mostEquidistants = 1;
-    int threadCount = 1;
 
     std::stringstream fileOutput;
 

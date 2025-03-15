@@ -154,7 +154,6 @@ void mpz_only::makeThreadsAndCalculate(const int howManyThreads) {
     std::cout << "About to make the workers." << std::endl;
     mpz_threadWorker worker_thread[howManyThreads];
     std::cout << "Starting threads..." << std::endl;
-    threadCount = howManyThreads;
 
     //Make them all point to the precalculated data.
     for (int i = 0; i < howManyThreads; i++) {
