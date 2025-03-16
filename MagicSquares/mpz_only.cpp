@@ -62,7 +62,12 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
 
 bool mpz_only::advanceTheCurrentVal() {
     currentVal+=boundingVal;
-    if (counter % 10000 == 0) { std::cout << currentVal << std::endl; } //So I can have some idea of where to pick up.
+    if (counter % 10000 == 0) {
+        std::ofstream file("lastLeftoff.txt");
+        file << currentVal << "\n";
+        file.close();
+        std::cout << currentVal << std::endl;
+    } //So I can have some idea of where to pick up.
     return maxVal == -1 || currentVal <= maxVal;
 }
 
