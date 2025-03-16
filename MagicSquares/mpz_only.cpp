@@ -3,6 +3,9 @@
 //
 
 #include "mpz_only.h"
+
+#include <fstream>
+
 #include "MagicSquare_data.h"
 
 bool isASquare(const mpz_int& testMe) {
@@ -134,6 +137,9 @@ bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::ve
             const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
             for (int k = j-1; k > 1; k--) {
                 if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < index/10) {
+                    std::ofstream file(index.str() + ".txt");
+                    file << "This is a near miss: " << index << "\n";
+                    file.close();
                     std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
                 }
                 if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
