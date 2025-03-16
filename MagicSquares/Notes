@@ -128,18 +128,6 @@ Largest:Left Top
 Sum: 64827
 
 
-Ascending list:
-Sqrt: 2 Value: 4
-Sqrt: 46 Value: 2116
-Sqrt: 58 Value: 3364
-Sqrt: 74 Value: 5476
-Sqrt: 82 Value: 6724
-Sqrt: 94 Value: 8836
-Sqrt: 97 Value: 9409
-Sqrt: 113 Value: 12769
-Sqrt: 127 Value: 16129
-
-
 --https://www.youtube.com/watch?v=uz9jOIdhzs0
 This is the smallest square she could make, where the bottom center integer was positive, I believe.
 
@@ -301,9 +289,16 @@ Largest:Center Top
   Val: 1856161008100
 Sum: 11628577404900 Goal Sum/9==x*9: 1292064156100 - 1292064156100 = 0
 
-Index: 3648795 had a near miss bot row: 69120
+Index: 3648795 had a near miss bot row: 69120 - This was cool but I found that half this number was even better.
 1216265 - We found that this number had a near miss of 7620 and the above number was a multiple of this.
 Factors: 5, 17, 41, 85, 205, 349, 697, 1745, 3485, 5933, 14309, 29665, 71545, 243253
+
+1216265 Near miss of 7680 - Closest one we have at any value tested. Amazing.
+5, 17, 41, 85, 205, 349, 697, 1745, 3485, 5933, 14309, 29665, 71545, 243253
+
+The only other near miss from 3000 to 2million
+Index: 1036405 had a near miss bot row: 53808
+5, 17, 85, 89, 137, 445, 685, 1513, 2329, 7565, 11645, 12193, 60965, 207281
 
 Near misses from Chris:
 Index: 2968810 had a near miss bot row: 1274592
@@ -329,6 +324,21 @@ Index: 4865060 had a near miss bot row: 122880
 Index: 6081325 had a near miss bot row: 192000
 Index: 7297590 had a near miss bot row: 276480
 Index: 8513855 had a near miss bot row: 376320
+Index: 9730120 had a near miss bot row: 491520
+
+395286125 has 283 pairs. Largest val: 312500649158880625 - New biggest pair count by bounding by 1216265
+458531905 has 364 pairs. Largest val: 420503005648644961
+
+Only significant results from bounding by 1216265 - Made it over 100,000,000 in all and found only huge numbers with huge sets of pairs.
+Index: 9730120 had a near miss bot row: 491520
+Index: 10946385 had a near miss bot row: 622080
+Index: 12162650 had a near miss bot row: 768000
+Index: 13378915 had a near miss bot row: 929280
+Index: 14595180 had a near miss bot row: 1105920
+Index: 15811445 had a near miss bot row: 1297920
+Index: 17027710 had a near miss bot row: 1505280
+Index: 18243975 had a near miss bot row: 1728000
+
 
 2,432,530 - 30720 - Bro wtf is this? This is from the list of 40s that I have.
 Index: 10946385 had a near miss bot row: 622080
@@ -341,9 +351,6 @@ Index: 18472285 had a near miss bot row: 948024
 Index: 18943525 had a near miss bot row: 365856
 Index: 12162650 had a near miss bot row: 768000
 Index: 26989625 had a near miss bot row: 1366848
-
-The only other near miss from 3000 to 2million
-Index: 1036405 had a near miss bot row: 53808
 
 
 -- This is why the threads can't simply bound on their own -- They diverge quickly
