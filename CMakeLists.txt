@@ -4,6 +4,7 @@ project(CLion_Test1)
 set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(MagicSquares)
+add_subdirectory(PowersOfFive)
 
 #Weird. Couldnt name the exe the same as the folder.
 add_executable(EveryMapout EveryMap/main.cpp)
