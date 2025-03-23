@@ -14,11 +14,9 @@ int main (int argc, const char * argv[]) {
 
   constexpr int initialLimit = 100;
 
-  mpz_int start = 48800;
+  mpz_int start = 48800; //starting point. (to the power of 5)
   mpz_int limit = start + initialLimit;
 
-  //Do we try to calculate
-  //Something like start with 1000^5.
   std::cout << "Starting with : " << start << std::endl;
 
   mpz_int total = 0;
@@ -44,14 +42,6 @@ int main (int argc, const char * argv[]) {
 
 mpz_int toPowerOfFive(const mpz_int& incoming) {
   return incoming * incoming * incoming * incoming * incoming;
-}
-
-mpz_int toPowerOfN(const mpz_int& incoming, const unsigned int N) {
-  mpz_int total = incoming;
-  for (unsigned i = 1; i <= N; ++i) {
-    total *= incoming;
-  }
-  return total;
 }
 
 bool searchMeeting(const mpz_int& target, const mpz_int& a, const mpz_int& b) {
@@ -82,4 +72,12 @@ bool findAnAlternativeWay(const mpz_int& target, const mpz_int& a, const mpz_int
   }
 
   return searchMeeting(target, a, b);
+}
+
+mpz_int toPowerOfN(const mpz_int& incoming, const unsigned int N) {
+  mpz_int total = incoming;
+  for (unsigned i = 1; i <= N; ++i) {
+    total *= incoming;
+  }
+  return total;
 }
