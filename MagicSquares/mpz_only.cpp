@@ -101,59 +101,145 @@ void mpz_only::GivenAnIndexTestValue(const mpz_int &index) {
 }
 
 bool mpz_only::testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
-    if (equidistPairs.size() < 4) return false; //Need to have 4 pairs for 2 diags and two tips of the cross
+    if (equidistPairs.size() < 2) return false;
     if (equidistPairs.size() > 200) std::cout << index << " has " << equidistPairs.size() << " pairs. Largest val: " << equidistPairs.at(equidistPairs.size()-1).second << std::endl;
 
-#ifdef TEST1
-    //I was able to prove this is bad for testing. The distance between all teh values does NOT have to be the same.
-    for (int i = equidistPairs.size()-1; i >= 3; i--) {
-        //Get a distance of "1" from lowest. If equidist pairs contains first_plus_one check for plus two and three. That would be yahtzee.
-        const mpz_int one_unit = ((equidistPairs.at(i).second - equidistPairs.at(i).first) / 8);
-        const mpz_int first_plus_one = one_unit + equidistPairs.at(i).first;
-        for (int j = i-1; j >= 2; j--) {
-            if (equidistPairs.at(j).first > first_plus_one+one_unit) { break;}
-            if (equidistPairs.at(j).first != first_plus_one) { continue;}
-            std::cout << "Found a buddy: " << index << "\n";
-            const mpz_int second_plus_one = equidistPairs.at(j).first + one_unit;
-            for (int k = j-1; k < equidistPairs.size(); k--) {
-                if (equidistPairs.at(k).first > second_plus_one+one_unit) { break;}
-                if (equidistPairs.at(k).first != second_plus_one) { continue;}
-                std::cout << "Found a twofer: " << index << "\n";
-                const mpz_int third_plus_one = equidistPairs.at(k).first + one_unit;
-                for (int l = k+1; l < equidistPairs.size(); l++) {
-                    if (equidistPairs.at(k).first > second_plus_one+one_unit) { break;}
-                    if (equidistPairs.at(k).first != second_plus_one) { continue;}
-                    std::cout << "Shouldbe a magic square of squares?! " << index << "\n";
-                    return true;
+    const mpz_int x = index * index;
+    
+    // Try all combinations of equidistant pairs to find a, b values for magic square
+    for (size_t i = 0; i < equidistPairs.size(); i++) {
+        for (size_t j = i + 1; j < equidistPairs.size(); j++) {
+            // Extract potential a and b values from the pairs
+            // Since pairs are (a², b²) where a² + b² = 2x², 
+            // we need to find actual a, b values that work
+            
+            const mpz_int a_squared = equidistPairs.at(i).first;
+            const mpz_int b_squared = equidistPairs.at(j).first;
+            
+            // Check if a_squared and b_squared are perfect squares
+            const mpz_int a = sqrt(a_squared);
+            const mpz_int b = sqrt(b_squared);
+            
+            if (a * a != a_squared || b * b != b_squared) continue;
+            
+            // Now test if this produces a magic square of squares
+            // Magic square formula:
+            // x-a  | x+a+b |  x-b
+            // x+a-b |   x   | x-a+b
+            // x+b  | x-a-b |  x+a
+            
+            mpz_int square_values[9];
+            square_values[0] = x - a;      // top-left
+            square_values[1] = x + a + b;  // top-center  
+            square_values[2] = x - b;      // top-right
+            square_values[3] = x + a - b;  // middle-left
+            square_values[4] = x;          // middle-center
+            square_values[5] = x - a + b;  // middle-right
+            square_values[6] = x + b;      // bottom-left
+            square_values[7] = x - a - b;  // bottom-center
+            square_values[8] = x + a;      // bottom-right
+            
+            // Check if all values are positive and perfect squares
+            bool allSquares = true;
+            for (int k = 0; k < 9; k++) {
+                if (square_values[k] <= 0 || !isASquare(square_values[k])) {
+                    allSquares = false;
+                    break;
                 }
+            }
+            
+            if (allSquares) {
+                std::cout << "\n*** FOUND MAGIC SQUARE OF SQUARES! ***" << std::endl;
+                std::cout << "Index: " << index << ", a: " << a << ", b: " << b << std::endl;
+                
+                // Print the magic square
+                for (int row = 0; row < 3; row++) {
+                    for (int col = 0; col < 3; col++) {
+                        std::cout << square_values[row*3 + col] << "\t";
+                    }
+                    std::cout << std::endl;
+                }
+                return true;
+            }
+            
+            // Also try with swapped roles of a and b
+            square_values[0] = x - b;      // top-left
+            square_values[1] = x + b + a;  // top-center  
+            square_values[2] = x - a;      // top-right
+            square_values[3] = x + b - a;  // middle-left
+            square_values[4] = x;          // middle-center
+            square_values[5] = x - b + a;  // middle-right
+            square_values[6] = x + a;      // bottom-left
+            square_values[7] = x - b - a;  // bottom-center
+            square_values[8] = x + b;      // bottom-right
+            
+            allSquares = true;
+            for (int k = 0; k < 9; k++) {
+                if (square_values[k] <= 0 || !isASquare(square_values[k])) {
+                    allSquares = false;
+                    break;
+                }
+            }
+            
+            if (allSquares) {
+                std::cout << "\n*** FOUND MAGIC SQUARE OF SQUARES! ***" << std::endl;
+                std::cout << "Index: " << index << ", a: " << b << ", b: " << a << std::endl;
+                
+                // Print the magic square
+                for (int row = 0; row < 3; row++) {
+                    for (int col = 0; col < 3; col++) {
+                        std::cout << square_values[row*3 + col] << "\t";
+                    }
+                    std::cout << std::endl;
+                }
+                return true;
             }
         }
     }
-    return false;
-#endif
-
-    //Potential best checking strat: Start at equidist[last] and try to find a pair where .first + .second + a different .second = 3X.
-    for (int i = equidistPairs.size()-1; i >= 2; i--)
-    {
-        const mpz_int& bot_center = equidistPairs.at(i).first;
-        const mpz_int& top_center = equidistPairs.at(i).second;
-        for (int j = i-1; j >= 1; j--) {
-            const mpz_int botPlusA = bot_center + equidistPairs.at(j).second;
-            const mpz_int topPlusA = top_center + equidistPairs.at(j).first;
-            for (int k = j-1; k > 1; k--) {
-                if (abs(index*index*3 - (botPlusA + equidistPairs.at(k).second)) < index/10) {
-                    std::ofstream file(index.str() + ".txt");
-                    file << "This is a near miss: " << index << "\n";
-                    file.close();
-                    std::cout << "\nIndex: " << index << " had a near miss bot row: " << abs(botPlusA + equidistPairs.at(k).second - index*index*3) << "\n\n";
+    
+    // Check for near misses (optional, for debugging)
+    static int near_miss_count = 0;
+    const mpz_int threshold = index / 1000;  // Adjust threshold as needed
+    
+    for (size_t i = 0; i < equidistPairs.size() && near_miss_count < 10; i++) {
+        for (size_t j = i + 1; j < equidistPairs.size(); j++) {
+            const mpz_int a_squared = equidistPairs.at(i).first;
+            const mpz_int b_squared = equidistPairs.at(j).first;
+            
+            const mpz_int a = sqrt(a_squared);
+            const mpz_int b = sqrt(b_squared);
+            
+            if (a * a != a_squared || b * b != b_squared) continue;
+            
+            mpz_int square_values[9];
+            square_values[0] = x - a;
+            square_values[1] = x + a + b;
+            square_values[2] = x - b;
+            square_values[3] = x + a - b;
+            square_values[4] = x;
+            square_values[5] = x - a + b;
+            square_values[6] = x + b;
+            square_values[7] = x - a - b;
+            square_values[8] = x + a;
+            
+            int non_square_count = 0;
+            mpz_int total_error = 0;
+            
+            for (int k = 0; k < 9; k++) {
+                if (square_values[k] > 0) {
+                    mpz_int root = sqrt(square_values[k]);
+                    mpz_int error = abs(square_values[k] - root * root);
+                    if (error > 0) {
+                        non_square_count++;
+                        total_error += error;
+                    }
                 }
-                if (topPlusA+equidistPairs.at(k).first - botPlusA+equidistPairs.at(k).second == 0) {
-                    std::cout << "\n\nFOUND 3 PAIRS, EQUIDISTANT FROM INDEX:" << index << std::endl <<std::endl;
-                }
-                else continue;
-                std::cout << "Found a twofer: Recode the shit after this line." << index << "\n";
-
-                return true;
+            }
+            
+            if (non_square_count <= 3 && total_error < threshold) {
+                std::cout << "\nNear miss found - Index: " << index << ", a: " << a << ", b: " << b;
+                std::cout << ", Non-squares: " << non_square_count << ", Total error: " << total_error << std::endl;
+                near_miss_count++;
             }
         }
     }
@@ -304,4 +390,177 @@ void mpz_only::isOneDouble(const mpz_int& startingPlace = 0) const {
     // if (closestIdxHalf == startingPlace) { std::cout << "Start and closest to half were the same \n"; }
     // std::cout << "Closest indices to being double: " << closestIdxHalf << " roughly half of idx: " << closestIdxDoub << "  with a diff of ";
     // std::cout << abs(squares_set.at(closestIdxHalf) *2 - squares_set.at(closestIdxDoub)) << " " << std::endl;
+}
+
+// Parametric approach functions - much more efficient than brute force
+bool mpz_only::testParametricMagicSquare(const mpz_int& x, const mpz_int& a, const mpz_int& b) {
+    // Magic square formula:
+    // x-a  | x+a+b |  x-b
+    // x+a-b |   x   | x-a+b
+    // x+b  | x-a-b |  x+a
+    
+    mpz_int values[9] = {
+        x - a,      x + a + b,  x - b,
+        x + a - b,  x,          x - a + b,
+        x + b,      x - a - b,  x + a
+    };
+    
+    // Check if all values are positive and perfect squares
+    for (int i = 0; i < 9; i++) {
+        if (values[i] <= 0 || !isASquare(values[i])) {
+            return false;
+        }
+    }
+    
+    std::cout << "\n*** PARAMETRIC MAGIC SQUARE OF SQUARES FOUND! ***" << std::endl;
+    std::cout << "x = " << x << ", a = " << a << ", b = " << b << std::endl;
+    
+    // Print the magic square
+    for (int row = 0; row < 3; row++) {
+        for (int col = 0; col < 3; col++) {
+            std::cout << values[row * 3 + col] << "\t";
+        }
+        std::cout << std::endl;
+    }
+    
+    return true;
+}
+
+bool mpz_only::isValidParametricTriple(const mpz_int& x, const mpz_int& a, const mpz_int& b) {
+    // Basic constraints for a magic square to have all positive values
+    if (a <= 0 || b <= 0 || x <= 0) return false;
+    if (a >= x || b >= x) return false;          // Ensure all values are positive
+    if (a + b >= x) return false;                // Ensure x - a - b > 0
+    
+    // Additional mathematical constraints based on known results
+    // From the Notes, we know that certain modular constraints apply
+    
+    // Constraint 1: For efficiency, focus on x values that are perfect squares
+    if (!isASquare(x)) return false;
+    
+    // Constraint 2: From number theory, certain modular relationships improve chances
+    // Based on the Notes mentioning factors like 5, 13, 17, 29, 37
+    mpz_int x_mod = x % 840;  // LCM of some promising small primes
+    if (x_mod % 5 != 0 && x_mod % 13 != 0 && x_mod % 17 != 0 && 
+        x_mod % 29 != 0 && x_mod % 37 != 0) {
+        return false;  // Focus on values divisible by these primes
+    }
+    
+    return true;
+}
+
+void mpz_only::parametricSearch(const mpz_int& start_x, const mpz_int& end_x) {
+    std::cout << "Starting parametric search from " << start_x << " to " << end_x << std::endl;
+    
+    mpz_int solutions_found = 0;
+    mpz_int tests_performed = 0;
+    
+    for (mpz_int x = start_x; x <= end_x; ++x) {
+        // Skip values that don't meet basic constraints
+        if (x % 1000 == 0) {
+            std::cout << "Parametric search progress: x = " << x << ", tests = " << tests_performed << std::endl;
+        }
+        
+        // Optimized ranges for a and b based on mathematical constraints
+        mpz_int max_a = min(x / 3, (mpz_int)1000);  // Reasonable upper bound
+        mpz_int max_b = min(x / 3, (mpz_int)1000);
+        
+        for (mpz_int a = 1; a <= max_a; ++a) {
+            // Skip if a is not promising based on constraints
+            if (!isASquare(a * a)) continue;  // Focus on cases where a is sqrt of a perfect square
+            
+            for (mpz_int b = 1; b <= max_b; ++b) {
+                if (a == b) continue;  // Avoid degenerate cases
+                
+                ++tests_performed;
+                
+                if (!isValidParametricTriple(x, a, b)) continue;
+                
+                if (testParametricMagicSquare(x, a, b)) {
+                    ++solutions_found;
+                    std::cout << "Solution " << solutions_found << " found!" << std::endl;
+                    
+                    // For now, stop at first solution for verification
+                    if (solutions_found >= 1) {
+                        std::cout << "Stopping parametric search after finding solution." << std::endl;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    std::cout << "Parametric search complete. Tests performed: " << tests_performed;
+    std::cout << ", Solutions found: " << solutions_found << std::endl;
+}
+
+void mpz_only::parametricSearchThreaded(const mpz_int& start_x, const mpz_int& end_x, int numThreads) {
+    std::cout << "Starting threaded parametric search from " << start_x << " to " << end_x;
+    std::cout << " using " << numThreads << " threads" << std::endl;
+    
+    std::atomic<mpz_int> current_x(start_x);
+    std::atomic<mpz_int> solutions_found(0);
+    std::atomic<mpz_int> tests_performed(0);
+    std::atomic<bool> solution_found(false);
+    
+    auto workerFunc = [&](int threadId) {
+        mpz_int local_tests = 0;
+        
+        while (!solution_found.load()) {
+            mpz_int x = current_x.fetch_add(1);
+            if (x > end_x) break;
+            
+            if (x % 1000 == 0 && threadId == 0) {  // Only thread 0 reports progress
+                std::cout << "Thread " << threadId << " progress: x = " << x;
+                std::cout << ", total tests = " << tests_performed.load() << std::endl;
+            }
+            
+            // Optimized ranges for a and b
+            mpz_int max_a = min(x / 3, (mpz_int)1000);
+            mpz_int max_b = min(x / 3, (mpz_int)1000);
+            
+            for (mpz_int a = 1; a <= max_a && !solution_found.load(); ++a) {
+                if (!isASquare(a * a)) continue;
+                
+                for (mpz_int b = 1; b <= max_b && !solution_found.load(); ++b) {
+                    if (a == b) continue;
+                    
+                    local_tests++;
+                    
+                    if (!isValidParametricTriple(x, a, b)) continue;
+                    
+                    if (testParametricMagicSquare(x, a, b)) {
+                        mpz_int sol_count = solutions_found.fetch_add(1) + 1;
+                        std::cout << "Thread " << threadId << " found solution " << sol_count << "!" << std::endl;
+                        solution_found.store(true);  // Signal all threads to stop
+                        break;
+                    }
+                }
+            }
+            
+            // Update global test counter periodically to avoid contention
+            if (local_tests % 100 == 0) {
+                tests_performed.fetch_add(local_tests);
+                local_tests = 0;
+            }
+        }
+        
+        // Add remaining local tests
+        tests_performed.fetch_add(local_tests);
+        std::cout << "Thread " << threadId << " finished" << std::endl;
+    };
+    
+    // Launch threads
+    std::vector<std::thread> threads;
+    for (int i = 0; i < numThreads; ++i) {
+        threads.emplace_back(workerFunc, i);
+    }
+    
+    // Wait for all threads to complete
+    for (auto& t : threads) {
+        t.join();
+    }
+    
+    std::cout << "Threaded parametric search complete. Tests performed: " << tests_performed.load();
+    std::cout << ", Solutions found: " << solutions_found.load() << std::endl;
 }

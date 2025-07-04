@@ -42,6 +42,12 @@ public:
 
     static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
     static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
+    
+    // New parametric approach functions
+    static bool testParametricMagicSquare(const mpz_int& x, const mpz_int& a, const mpz_int& b);
+    void parametricSearch(const mpz_int& start_x, const mpz_int& end_x);
+    void parametricSearchThreaded(const mpz_int& start_x, const mpz_int& end_x, int numThreads);
+    static bool isValidParametricTriple(const mpz_int& x, const mpz_int& a, const mpz_int& b);
 
     void start();
 
