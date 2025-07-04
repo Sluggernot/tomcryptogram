@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(MagicSquares)
 add_subdirectory(PowersOfFive)
+add_subdirectory(EulerBrick)
 
 #Weird. Couldnt name the exe the same as the folder.
 add_executable(EveryMapout EveryMap/main.cpp)

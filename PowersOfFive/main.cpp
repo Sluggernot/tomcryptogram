@@ -14,7 +14,7 @@ int main (int argc, const char * argv[]) {
 
   constexpr int initialLimit = 100;
 
-  mpz_int start = 48800; //starting point. (to the power of 5)
+  mpz_int start = 61400; //starting point. (to the power of 5)
   mpz_int limit = start + initialLimit;
 
   std::cout << "Starting with : " << start << std::endl;
