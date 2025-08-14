@@ -5,7 +5,7 @@
 #include "mpz_only.h"
 
 #include <fstream>
-
+#include <atomic>
 #include "MagicSquare_data.h"
 
 bool isASquare(const mpz_int& testMe) {
@@ -449,68 +449,29 @@ bool mpz_only::isValidParametricTriple(const mpz_int& x, const mpz_int& a, const
     return true;
 }
 
-void mpz_only::parametricSearch(const mpz_int& start_x, const mpz_int& end_x) {
-    std::cout << "Starting parametric search from " << start_x << " to " << end_x << std::endl;
-    
-    mpz_int solutions_found = 0;
-    mpz_int tests_performed = 0;
-    
-    for (mpz_int x = start_x; x <= end_x; ++x) {
-        // Skip values that don't meet basic constraints
-        if (x % 1000 == 0) {
-            std::cout << "Parametric search progress: x = " << x << ", tests = " << tests_performed << std::endl;
-        }
-        
-        // Optimized ranges for a and b based on mathematical constraints
-        mpz_int max_a = min(x / 3, (mpz_int)1000);  // Reasonable upper bound
-        mpz_int max_b = min(x / 3, (mpz_int)1000);
-        
-        for (mpz_int a = 1; a <= max_a; ++a) {
-            // Skip if a is not promising based on constraints
-            if (!isASquare(a * a)) continue;  // Focus on cases where a is sqrt of a perfect square
-            
-            for (mpz_int b = 1; b <= max_b; ++b) {
-                if (a == b) continue;  // Avoid degenerate cases
-                
-                ++tests_performed;
-                
-                if (!isValidParametricTriple(x, a, b)) continue;
-                
-                if (testParametricMagicSquare(x, a, b)) {
-                    ++solutions_found;
-                    std::cout << "Solution " << solutions_found << " found!" << std::endl;
-                    
-                    // For now, stop at first solution for verification
-                    if (solutions_found >= 1) {
-                        std::cout << "Stopping parametric search after finding solution." << std::endl;
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    
-    std::cout << "Parametric search complete. Tests performed: " << tests_performed;
-    std::cout << ", Solutions found: " << solutions_found << std::endl;
-}
-
-void mpz_only::parametricSearchThreaded(const mpz_int& start_x, const mpz_int& end_x, int numThreads) {
-    std::cout << "Starting threaded parametric search from " << start_x << " to " << end_x;
+void mpz_only::parametricSearch(const mpz_int& start_x, const mpz_int& end_x, int numThreads) {
+    std::cout << "Starting parametric search from " << start_x << " to " << end_x;
     std::cout << " using " << numThreads << " threads" << std::endl;
     
-    std::atomic<mpz_int> current_x(start_x);
-    std::atomic<mpz_int> solutions_found(0);
-    std::atomic<mpz_int> tests_performed(0);
+    // Convert mpz_int to long long for atomic operations
+    long long start_ll = static_cast<long long>(start_x);
+    long long end_ll = static_cast<long long>(end_x);
+    
+    std::atomic<long long> current_x(start_ll);
+    std::atomic<long long> solutions_found(0);
+    std::atomic<long long> tests_performed(0);
     std::atomic<bool> solution_found(false);
     
     auto workerFunc = [&](int threadId) {
-        mpz_int local_tests = 0;
+        long long local_tests = 0;
         
         while (!solution_found.load()) {
-            mpz_int x = current_x.fetch_add(1);
-            if (x > end_x) break;
+            long long x_ll = current_x.fetch_add(1);
+            if (x_ll > end_ll) break;
             
-            if (x % 1000 == 0 && threadId == 0) {  // Only thread 0 reports progress
+            mpz_int x = x_ll;  // Convert back to mpz_int for calculations
+            
+            if (x_ll % 1000 == 0 && threadId == 0) {  // Only thread 0 reports progress
                 std::cout << "Thread " << threadId << " progress: x = " << x;
                 std::cout << ", total tests = " << tests_performed.load() << std::endl;
             }
@@ -530,7 +491,7 @@ void mpz_only::parametricSearchThreaded(const mpz_int& start_x, const mpz_int& e
                     if (!isValidParametricTriple(x, a, b)) continue;
                     
                     if (testParametricMagicSquare(x, a, b)) {
-                        mpz_int sol_count = solutions_found.fetch_add(1) + 1;
+                        long long sol_count = solutions_found.fetch_add(1) + 1;
                         std::cout << "Thread " << threadId << " found solution " << sol_count << "!" << std::endl;
                         solution_found.store(true);  // Signal all threads to stop
                         break;

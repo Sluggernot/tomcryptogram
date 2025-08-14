@@ -45,8 +45,7 @@ public:
     
     // New parametric approach functions
     static bool testParametricMagicSquare(const mpz_int& x, const mpz_int& a, const mpz_int& b);
-    void parametricSearch(const mpz_int& start_x, const mpz_int& end_x);
-    void parametricSearchThreaded(const mpz_int& start_x, const mpz_int& end_x, int numThreads);
+    static void parametricSearch(const mpz_int& start_x, const mpz_int& end_x, int numThreads = 1);
     static bool isValidParametricTriple(const mpz_int& x, const mpz_int& a, const mpz_int& b);
 
     void start();

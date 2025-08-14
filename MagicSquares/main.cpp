@@ -101,9 +101,7 @@ int main(int argc, char **argv) {
         //Ask Chris for more info on params
     }
     if (maxRange - start_x > 1) {
-        std::cout << "Running parametric search from: " << start_x << " up to " << maxRange << std::endl;
-        mpz_only temp;
-        temp.parametricSearch(start_x, maxRange);
+        mpz_only::parametricSearch(start_x, maxRange, numThreads);
         return 0;
     }
 
