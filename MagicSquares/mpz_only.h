@@ -52,6 +52,10 @@ public:
 
     mpz_int PrintAllDataGivenAValue(const mpz_int& index, bool bPrint = true);
 
+    // CSV output for pattern visualization
+    static void outputCsvHeader(std::ofstream& csvFile);
+    static void outputCsvRow(std::ofstream& csvFile, const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, mpz_int nearMissError);
+
     //Deprecated logic I used to find squares that were near double/half another square
     void isOneDouble(const mpz_int& startingPlace) const;
 

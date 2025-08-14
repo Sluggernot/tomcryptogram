@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(factor:*)"
+      "Bash(factor:*)",
+      "Bash(g++:*)",
+      "Bash(./analyze_candidates)",
+      "Bash(./csv_analysis)"
     ],
     "deny": []
   }

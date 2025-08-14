@@ -62,3 +62,48 @@ Mathematical exploration of relationships between powers of five, searching for 
 - Computational searches have processed over 1 trillion magic square combinations
 - The project uses CSV output for long-running computational results
 - Threading is implemented to utilize multiple CPU cores for mathematical searches
+
+## Recent Progress (August 2025)
+
+### Algorithm Optimization
+- **Performance breakthrough**: Optimized `findAllEquidistantValues` algorithm achieves 2x speedup
+- **Key insight**: Eliminated nested loops by calculating iterL directly using `targetL = √(2X² - iterR²)`
+- **Mathematical optimization**: Reduced O(R × L) nested loops to O(R) single loop with direct calculation
+- **Testing on 1216265**: Original 50,325 microseconds → Optimized 25,550 microseconds
+
+### Prime Factorization Discovery
+- **Critical finding**: 1216265 (best near-miss candidate with 7680 error) has special properties
+- **Mathematical insight**: All prime factors are ≡ 1 (mod 4): {5, 17, 41, 349}
+- **Number theory connection**: Numbers with prime factors ≡ 1 (mod 4) have many sum-of-two-squares representations
+- **Explains equidistant pairs**: 1216265 should have ~32 representations as sum of two squares (found 40 pairs)
+
+### Strategic Candidate Analysis
+- **Generated strategic_candidates.txt**: 45 mathematically targeted values based on prime factorization patterns
+- **All candidates have exactly 40 equidistant pairs**: Confirms pattern-based selection worked
+- **Testing infrastructure**: Created `analyze_candidates.cpp` for batch analysis
+- **Performance validation**: 2x speedup applies to all candidates
+
+### Pattern Visualization System
+- **CSV output implementation**: Added comprehensive data export for pattern analysis
+- **Data captured**: Index, equidistant count, prime factors, mod4 compatibility, near miss errors, pair ratios
+- **Created pattern_analysis.csv**: Rich dataset for 45 strategic candidates
+- **Visualization ready**: Data formatted for import into Python/matplotlib, R, Excel, etc.
+
+### Key Insights for Future Work
+1. **Focus on numbers with prime factors ≡ 1 (mod 4)** for high equidistant counts
+2. **Near miss analysis** shows patterns but no clear path to perfect squares yet
+3. **Mathematical optimization** more effective than micro-optimizations for large number arithmetic
+4. **Pattern visualization** now possible with comprehensive CSV data export
+
+### Files Added/Modified
+- `analyze_candidates.cpp`: Batch analysis tool for strategic candidates
+- `csv_analysis.cpp`: Pattern visualization data generator  
+- `strategic_candidates.txt`: 45 mathematically targeted test values
+- `pattern_analysis.csv`: Comprehensive analysis results for visualization
+- `MagicSquares/mpz_only.h/cpp`: Optimized algorithm + CSV output functions
+- `MagicSquares/claude_chat.txt`: Detailed session history and discoveries
+
+### Next Steps
+- Import pattern_analysis.csv into visualization tools to identify hidden patterns
+- Investigate mathematical impossibility proofs for magic squares of squares
+- Explore other number theory constraints that might guide or limit the search

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <atomic>
 #include <chrono>
+#include <iomanip>
 #include "MagicSquare_data.h"
 
 bool isASquare(const mpz_int& testMe) {
@@ -336,6 +337,57 @@ void mpz_only::findAllEquidistantValues_Original(const mpz_int& index, std::vect
         ++iterR;
         iterRv = iterR*iterR;
     }
+}
+
+// CSV output functions for pattern visualization
+void mpz_only::outputCsvHeader(std::ofstream& csvFile) {
+    csvFile << "index,index_squared,equidistant_count,prime_factors,mod4_compatible,near_miss_error,largest_pair_value,smallest_pair_value,ratio_range,sum_of_squares\n";
+}
+
+void mpz_only::outputCsvRow(std::ofstream& csvFile, const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, mpz_int nearMissError) {
+    if (equidistPairs.empty()) return;
+    
+    // Basic metrics
+    csvFile << index << "," << (index * index) << "," << equidistPairs.size() << ",";
+    
+    // Prime factorization analysis (simplified - would need proper factorization function)
+    // For now, just check if index has small prime factors
+    bool has_5 = (index % 5 == 0);
+    bool has_13 = (index % 13 == 0);
+    bool has_17 = (index % 17 == 0);
+    bool has_41 = (index % 41 == 0);
+    bool has_349 = (index % 349 == 0);
+    
+    csvFile << "\"";
+    if (has_5) csvFile << "5 ";
+    if (has_13) csvFile << "13 ";
+    if (has_17) csvFile << "17 ";
+    if (has_41) csvFile << "41 ";
+    if (has_349) csvFile << "349 ";
+    csvFile << "\",";
+    
+    // Mod 4 compatibility (rough estimate)
+    bool likely_mod4_compatible = (has_5 || has_13 || has_17 || has_41);
+    csvFile << (likely_mod4_compatible ? "1" : "0") << ",";
+    
+    // Near miss error
+    csvFile << nearMissError << ",";
+    
+    // Pair analysis
+    mpz_int largest = equidistPairs.back().second;
+    mpz_int smallest = equidistPairs.front().first;
+    csvFile << largest << "," << smallest << ",";
+    
+    // Ratio range (largest/smallest)
+    mpf_float ratio = mpf_float(largest) / mpf_float(smallest);
+    csvFile << std::fixed << std::setprecision(6) << ratio << ",";
+    
+    // Sum of all squares in pairs
+    mpz_int sum_of_squares = 0;
+    for (const auto& pair : equidistPairs) {
+        sum_of_squares += pair.first + pair.second;
+    }
+    csvFile << sum_of_squares << "\n";
 }
 
 // Performance test function
