@@ -33,8 +33,6 @@ int main(int argc, char **argv) {
     std::string_view detailsPrefix = "--details=";
     std::string_view adjustPrefix = "--dontAdjust";
     std::string_view maxValuePrefix = "--maxValue=";
-    std::string_view paraStart = "--paraStart=";
-    std::string_view paraEnd = "--paraEnd=";
 
     int start_x = 1;
     int maxRange = 1;
@@ -88,21 +86,9 @@ int main(int argc, char **argv) {
             temp.PrintAllDataGivenAValue(indexToCheck, true);
             return 0;
         }
-        if (arg.starts_with(paraStart)) {
-            const std::string_view sv = arg.substr(paraStart.size());
-            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), start_x);
-        }
-        if (arg.starts_with(paraEnd)) {
-            const std::string_view sv = arg.substr(paraEnd.size());
-            auto result = std::from_chars(sv.data(), sv.data() + sv.size(), maxRange);
-        }
 
         //Print equidistant pairs for a given number? List?
         //Ask Chris for more info on params
-    }
-    if (maxRange - start_x > 1) {
-        mpz_only::parametricSearch(start_x, maxRange, numThreads);
-        return 0;
     }
 
     //https://www.calculatorsoup.com/calculators/math/prime-number-calculator.php
