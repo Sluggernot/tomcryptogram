@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
     std::string_view detailsPrefix = "--details=";
     std::string_view adjustPrefix = "--dontAdjust";
     std::string_view maxValuePrefix = "--maxValue=";
+    std::string_view perfTestPrefix = "--perftest=";
 
     int start_x = 1;
     int maxRange = 1;
@@ -84,6 +85,12 @@ int main(int argc, char **argv) {
             //auto result = std::from_chars(sv.data(), sv.data() + sv.size(), indexToCheck);
             mpz_only temp;
             temp.PrintAllDataGivenAValue(indexToCheck, true);
+            return 0;
+        }
+        if (arg.starts_with(perfTestPrefix)) {
+            const std::string_view sv = arg.substr(perfTestPrefix.size());
+            mpz_int testValue(sv);
+            mpz_only::runPerformanceTest(testValue);
             return 0;
         }
 

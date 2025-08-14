@@ -41,7 +41,9 @@ public:
     void setStartingValueAndBounding(const mpz_int& starting, const mpz_int& bounding, const mpz_int& max,  bool adjustStart);
 
     static void findAllEquidistantValues(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
+    static void findAllEquidistantValues_Original(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
     static bool testEquidistantValsForSquares(const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs);
+    static void runPerformanceTest(const mpz_int& testValue);
 
     void start();
 

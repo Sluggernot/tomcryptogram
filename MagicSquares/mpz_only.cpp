@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <atomic>
+#include <chrono>
 #include "MagicSquare_data.h"
 
 bool isASquare(const mpz_int& testMe) {
@@ -46,15 +47,25 @@ void mpz_only::findAllEquidistantValues(const mpz_int& index, std::vector<std::p
 
     const mpz_int twoX = index*index * 2;
     mpz_int iterR = index+1;
-    mpz_int iterL = index;
+    
+    // Mathematical optimization: limit search range
+    // For iterR, we know iterR² < 2X², so iterR < √2 * X ≈ 1.414 * X
+    const mpz_int maxR = sqrt(twoX);
 
     mpz_int iterRv = iterR*iterR;
-    while (iterRv < twoX) {
-        while (iterL >= 0 && twoX < iterL*iterL + iterRv) {--iterL;}
-        if (iterL < 0) { break; }
-        if (iterL*iterL + iterRv == twoX) {
-            equidistPairs.emplace_back(iterL*iterL, iterRv);
+    while (iterR <= maxR) {
+        // Mathematical optimization: calculate iterL directly using integer square root
+        // We want iterL² = 2X² - iterR², so iterL = √(2X² - iterR²)
+        mpz_int targetLSquared = twoX - iterRv;
+        if (targetLSquared < 0) break;
+        
+        mpz_int targetL = sqrt(targetLSquared);
+        
+        // Check if targetL² exactly equals targetLSquared (perfect square)
+        if (targetL * targetL == targetLSquared) {
+            equidistPairs.emplace_back(targetLSquared, iterRv);
         }
+        
         ++iterR;
         iterRv = iterR*iterR;
     }
@@ -75,6 +86,7 @@ void mpz_only::start() {
     while (true) {
         //GivenAnIndexTestValue(currentVal); //Would only use if I wanted single threaded to have special output?
         findAllEquidistantValues(currentVal, equidistant_vals);
+        // findAllEquidistantValues_Original(currentVal, equidistant_vals);
         if (testEquidistantValsForSquares(currentVal, equidistant_vals)) {break;};
         ++counter;
         if (!advanceTheCurrentVal()) return;
@@ -304,5 +316,81 @@ void mpz_only::isOneDouble(const mpz_int& startingPlace = 0) const {
     // if (closestIdxHalf == startingPlace) { std::cout << "Start and closest to half were the same \n"; }
     // std::cout << "Closest indices to being double: " << closestIdxHalf << " roughly half of idx: " << closestIdxDoub << "  with a diff of ";
     // std::cout << abs(squares_set.at(closestIdxHalf) *2 - squares_set.at(closestIdxDoub)) << " " << std::endl;
+}
+
+// Original algorithm for performance comparison
+void mpz_only::findAllEquidistantValues_Original(const mpz_int& index, std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs) {
+    equidistPairs.clear();
+
+    const mpz_int twoX = index*index * 2;
+    mpz_int iterR = index+1;
+    mpz_int iterL = index;
+
+    mpz_int iterRv = iterR*iterR;
+    while (iterRv < twoX) {
+        while (iterL >= 0 && twoX < iterL*iterL + iterRv) {--iterL;}
+        if (iterL < 0) { break; }
+        if (iterL*iterL + iterRv == twoX) {
+            equidistPairs.emplace_back(iterL*iterL, iterRv);
+        }
+        ++iterR;
+        iterRv = iterR*iterR;
+    }
+}
+
+// Performance test function
+void mpz_only::runPerformanceTest(const mpz_int& testValue) {
+    std::vector<std::pair<mpz_int, mpz_int>> optimized_pairs;
+    std::vector<std::pair<mpz_int, mpz_int>> original_pairs;
+    
+    std::cout << "\n=== Performance Test for value: " << testValue << " ===" << std::endl;
+    
+    // Test original algorithm
+    auto start_time = std::chrono::high_resolution_clock::now();
+    findAllEquidistantValues_Original(testValue, original_pairs);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto original_duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    
+    // Test optimized algorithm
+    start_time = std::chrono::high_resolution_clock::now();
+    findAllEquidistantValues(testValue, optimized_pairs);
+    end_time = std::chrono::high_resolution_clock::now();
+    auto optimized_duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    
+    // Verify results are identical
+    bool results_match = (original_pairs.size() == optimized_pairs.size());
+    if (results_match) {
+        for (size_t i = 0; i < original_pairs.size(); i++) {
+            if (original_pairs[i].first != optimized_pairs[i].first || 
+                original_pairs[i].second != optimized_pairs[i].second) {
+                results_match = false;
+                break;
+            }
+        }
+    }
+    
+    // Report results
+    std::cout << "Original algorithm:  " << original_duration.count() << " microseconds" << std::endl;
+    std::cout << "Optimized algorithm: " << optimized_duration.count() << " microseconds" << std::endl;
+    std::cout << "Speedup: " << (double)original_duration.count() / optimized_duration.count() << "x" << std::endl;
+    std::cout << "Equidistant pairs found: " << optimized_pairs.size() << std::endl;
+    std::cout << "Results match: " << (results_match ? "YES" : "NO") << std::endl;
+    
+    if (!results_match) {
+        std::cout << "ERROR: Results don't match!" << std::endl;
+        std::cout << "Original found " << original_pairs.size() << " pairs" << std::endl;
+        std::cout << "Optimized found " << optimized_pairs.size() << " pairs" << std::endl;
+    }
+    
+    // Print first few pairs for verification
+    std::cout << "\nFirst 5 equidistant pairs:" << std::endl;
+    for (size_t i = 0; i < std::min((size_t)5, optimized_pairs.size()); i++) {
+        mpz_int left_sqrt = sqrt(optimized_pairs[i].first);
+        mpz_int right_sqrt = sqrt(optimized_pairs[i].second);
+        std::cout << "  " << left_sqrt << "² + " << right_sqrt << "² = " 
+                  << optimized_pairs[i].first << " + " << optimized_pairs[i].second 
+                  << " = " << (optimized_pairs[i].first + optimized_pairs[i].second) << std::endl;
+    }
+    std::cout << "=========================" << std::endl;
 }
 
