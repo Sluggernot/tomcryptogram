@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(EulerBrick
         main.cpp
+        euler_brick_search.h
+        euler_brick_search.cpp
 )
 
 #find_package(Eigen3 CONFIG REQUIRED)

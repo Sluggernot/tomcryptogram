@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
     int boundingNum = 1;
     bool adjustStartByModBounding = true;
     int maxValue = -1;
+    std::string outputFile = "";
 
     std::string_view helpPrefix = "--help=";
     std::string_view fileParamPrefix = "--file=";
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
     std::string_view adjustPrefix = "--dontAdjust";
     std::string_view maxValuePrefix = "--maxValue=";
     std::string_view perfTestPrefix = "--perftest=";
+    std::string_view outputPrefix = "--output=";
 
     int start_x = 1;
     int maxRange = 1;
@@ -93,6 +95,11 @@ int main(int argc, char **argv) {
             mpz_only::runPerformanceTest(testValue);
             return 0;
         }
+        if (arg.starts_with(outputPrefix)) {
+            const std::string_view sv = arg.substr(outputPrefix.size());
+            outputFile = std::string(sv);
+            std::cout << "CSV output file: " << outputFile << std::endl;
+        }
 
         //Print equidistant pairs for a given number? List?
         //Ask Chris for more info on params
@@ -129,12 +136,23 @@ int main(int argc, char **argv) {
     // 85 - 9592250 17*5
     // 697 - 57185365  least common denominator between 17 and 41 which keeps coming up as a factor of the more interesting near misses.
     temp.setStartingValueAndBounding(startingNum, boundingNum, maxValue, adjustStartByModBounding);
+    
     //Wanted to test 5107973 from https://oeis.org/A097282
     if (numThreads > 1) {
-        temp.makeThreadsAndCalculate(numThreads);
+        // Multi-threaded execution
+        if (!outputFile.empty()) {
+            temp.makeThreadsAndCalculateWithCsv(numThreads, outputFile);
+        } else {
+            temp.makeThreadsAndCalculate(numThreads);
+        }
     }
     else {
-        temp.start();
+        // Single-threaded execution
+        if (!outputFile.empty()) {
+            temp.searchWithCsvOutput(outputFile);
+        } else {
+            temp.start();
+        }
     }
 
     //Oh, right. So what holds true between LoShu and HiShu? 1 and 9 with the B diag, right?

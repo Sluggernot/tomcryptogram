@@ -1,0 +1,31 @@
+A perfect cuboid (also called a perfect Euler brick or perfect box) is an Euler brick whose space diagonal also has integer length. In other words, the following equation is added to the system of Diophantine equations defining an Euler brick:
+
+    a 2 + b 2 + c 2 = g 2 , {\displaystyle a^{2}+b^{2}+c^{2}=g^{2},}
+
+where g is the space diagonal. As of March 2020, no example of a perfect cuboid had been found and no one has proven that none exist.[5]
+Euler brick with edges a, b, c and face diagonals d, e, f along with space diagonal g
+
+Exhaustive computer searches show that, if a perfect cuboid exists,
+
+    the odd edge must be greater than 2.5 × 1013,[6]
+    the smallest edge must be greater than 5×1011,[6] and
+    the space diagonal must be greater than 9 × 1015.[7]
+
+Some facts are known about properties that must be satisfied by a primitive perfect cuboid, if one exists, based on modular arithmetic:[8]
+
+    One edge, two face diagonals and the space diagonal must be odd, one edge and the remaining face diagonal must be divisible by 4, and the remaining edge must be divisible by 16.
+    Two edges must have length divisible by 3 and at least one of those edges must have length divisible by 9.
+    One edge must have length divisible by 5.
+    One edge must have length divisible by 7.
+    One edge must have length divisible by 11.
+    One edge must have length divisible by 19.
+    One edge or space diagonal must be divisible by 13.
+    One edge, face diagonal or space diagonal must be divisible by 17.
+    One edge, face diagonal or space diagonal must be divisible by 29.
+    One edge, face diagonal or space diagonal must be divisible by 37.
+
+In addition:
+
+    The space diagonal is neither a prime power nor a product of two primes.[9]: p. 579 
+    The space diagonal can only contain prime divisors that are congruent to 1 modulo 4.[9]: p. 566 [10]
+

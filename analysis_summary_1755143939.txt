@@ -1,0 +1,11 @@
+LARGE-SCALE MAGIC SQUARE ANALYSIS SUMMARY
+========================================
+
+SMART SCAN MODE: Focusing on numbers with factors {5, 13, 17, 41}
+
+BREAKTHROUGH: 1105 has relative error 449!
+
+FINAL STATISTICS:
+Total processed: 1
+Strategic candidates found: 1
+Best candidate: 1105 (rel_error: 449)

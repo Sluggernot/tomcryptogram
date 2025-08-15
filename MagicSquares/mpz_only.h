@@ -7,6 +7,8 @@
 
 #include <map>
 #include <thread>
+#include <mutex>
+#include <memory>
 #include <boost/multiprecision/gmp.hpp>
 
 #include "squares_container.h"
@@ -33,6 +35,10 @@ class mpz_only {
     unsigned long mostEquidistants = 1;
 
     std::stringstream fileOutput;
+    
+    // Multi-threaded CSV support
+    std::unique_ptr<std::ofstream> sharedCsvFile;
+    std::mutex csvMutex;
 
 public:
 
@@ -55,6 +61,10 @@ public:
     // CSV output for pattern visualization
     static void outputCsvHeader(std::ofstream& csvFile);
     static void outputCsvRow(std::ofstream& csvFile, const mpz_int& index, const std::vector<std::pair<mpz_int, mpz_int>>& equidistPairs, mpz_int nearMissError);
+    
+    // CSV search functions
+    void searchWithCsvOutput(const std::string& csvFilename);
+    void makeThreadsAndCalculateWithCsv(const int howManyThreads, const std::string& csvFilename);
 
     //Deprecated logic I used to find squares that were near double/half another square
     void isOneDouble(const mpz_int& startingPlace) const;

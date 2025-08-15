@@ -390,6 +390,128 @@ void mpz_only::outputCsvRow(std::ofstream& csvFile, const mpz_int& index, const 
     csvFile << sum_of_squares << "\n";
 }
 
+// Simple CSV search function
+void mpz_only::searchWithCsvOutput(const std::string& csvFilename) {
+    std::ofstream csvFile(csvFilename);
+    
+    if (!csvFile.is_open()) {
+        std::cerr << "Failed to open CSV file: " << csvFilename << std::endl;
+        return;
+    }
+    
+    std::cout << "CSV output enabled: " << csvFilename << std::endl;
+    outputCsvHeader(csvFile);
+    
+    while (true) {
+        findAllEquidistantValues(currentVal, equidistant_vals);
+        
+        // Output to CSV if candidate has enough pairs
+        if (equidistant_vals.size() >= 4) {
+            // Calculate near miss error for CSV output
+            mpz_int nearMissError = 0;
+            if (equidistant_vals.size() >= 3) {
+                mpz_int x = currentVal * currentVal;
+                mpz_int ideal_sum = x * 3;
+                mpz_int test_sum = equidistant_vals[0].first + equidistant_vals[1].second + equidistant_vals[2].second;
+                nearMissError = abs(ideal_sum - test_sum);
+            }
+            outputCsvRow(csvFile, currentVal, equidistant_vals, nearMissError);
+        }
+        
+        // Check for high equidistant counts
+        // if (equidistant_vals.size() >= mostEquidistants) {
+        //     std::cout << "Met or exceeded highest equidistant count: " << currentVal << "," << currentVal*currentVal << "," << equidistant_vals.size() << \
+        //         " Largest value: " << equidistant_vals.at(equidistant_vals.size()-1).second <<  std::endl;
+        //     mostEquidistants = equidistant_vals.size();
+        // }
+        
+        if (testEquidistantValsForSquares(currentVal, equidistant_vals)) {break;};
+        ++counter;
+        if (!advanceTheCurrentVal()) break;
+    }
+    
+    csvFile.close();
+    std::cout << "CSV output saved to: " << csvFilename << std::endl;
+}
+
+void mpz_only::makeThreadsAndCalculateWithCsv(const int howManyThreads, const std::string& csvFilename) {
+    // Set up shared CSV file
+    sharedCsvFile = std::make_unique<std::ofstream>(csvFilename);
+    if (!sharedCsvFile->is_open()) {
+        std::cerr << "Failed to open CSV file: " << csvFilename << std::endl;
+        return;
+    }
+    
+    std::cout << "Multi-threaded CSV output enabled: " << csvFilename << std::endl;
+    outputCsvHeader(*sharedCsvFile);
+    
+    std::cout << "About to make the workers." << std::endl;
+    mpz_threadWorker worker_thread[howManyThreads];
+    std::cout << "Starting threads..." << std::endl;
+
+    //Make them all point to the precalculated data.
+    for (int i = 0; i < howManyThreads; i++) {
+        worker_thread[i].t_threadNum = i;
+    }
+    std::cout << "Data is set." << std::endl;
+
+    auto lambda = [this](mpz_threadWorker& worker) {
+        while (returnWorkerValAndReadyNext(worker.t_currentVal))
+        {
+            findAllEquidistantValues(worker.t_currentVal, worker.t_equidistant_vals);
+            
+            // Output to CSV if candidate has enough pairs
+            if (worker.t_equidistant_vals.size() >= 4) {
+                // Calculate near miss error for CSV output
+                mpz_int nearMissError = 0;
+                if (worker.t_equidistant_vals.size() >= 3) {
+                    mpz_int x = worker.t_currentVal * worker.t_currentVal;
+                    mpz_int ideal_sum = x * 3;
+                    mpz_int test_sum = worker.t_equidistant_vals[0].first + worker.t_equidistant_vals[1].second + worker.t_equidistant_vals[2].second;
+                    nearMissError = abs(ideal_sum - test_sum);
+                }
+                
+                // Thread-safe CSV writing
+                {
+                    std::lock_guard<std::mutex> lock(csvMutex);
+                    outputCsvRow(*sharedCsvFile, worker.t_currentVal, worker.t_equidistant_vals, nearMissError);
+                    sharedCsvFile->flush(); // Ensure data is written immediately
+                }
+            }
+            
+            // Check for high equidistant counts (thread-safe console output)
+            // if (worker.t_equidistant_vals.size() >= mostEquidistants) {
+            //     std::lock_guard<std::mutex> lock(csvMutex);
+            //     if (worker.t_equidistant_vals.size() >= mostEquidistants) { // Double-check after acquiring lock
+            //         std::cout << "Thread " << worker.t_threadNum << " - Met or exceeded highest equidistant count: " << worker.t_currentVal
+            //                  << "," << worker.t_currentVal*worker.t_currentVal << "," << worker.t_equidistant_vals.size()
+            //                  << " Largest value: " << worker.t_equidistant_vals.at(worker.t_equidistant_vals.size()-1).second << std::endl;
+            //         mostEquidistants = worker.t_equidistant_vals.size();
+            //     }
+            // }
+            
+            if (testEquidistantValsForSquares(worker.t_currentVal, worker.t_equidistant_vals)) {
+                std::cout << "Thread " << worker.t_threadNum << " found one!" << std::endl;
+                break;
+            }
+        }
+    };
+
+    for (int i = 0; i < howManyThreads; i++) {
+        worker_thread[i].t_worker_thread = std::thread(lambda, std::ref(worker_thread[i]));
+    }
+    std::cout << "Threads are processing with CSV output..." << std::endl;
+    for (int i = 0; i < howManyThreads; i++) {
+        worker_thread[i].t_worker_thread.join();
+    }
+    std::cout << "Threads are done." << std::endl;
+    
+    // Close CSV file
+    sharedCsvFile->close();
+    sharedCsvFile.reset();
+    std::cout << "Multi-threaded CSV output saved to: " << csvFilename << std::endl;
+}
+
 // Performance test function
 void mpz_only::runPerformanceTest(const mpz_int& testValue) {
     std::vector<std::pair<mpz_int, mpz_int>> optimized_pairs;

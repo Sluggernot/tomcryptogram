@@ -4,7 +4,9 @@
       "Bash(factor:*)",
       "Bash(g++:*)",
       "Bash(./analyze_candidates)",
-      "Bash(./csv_analysis)"
+      "Bash(./csv_analysis)",
+      "Bash(python3:*)",
+      "Bash(./large_scale_analyzer:*)"
     ],
     "deny": []
   }
