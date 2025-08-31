@@ -91,14 +91,20 @@ bool EulerBrickSearch::satisfiesParityConstraints(const mpz_int& a, const mpz_in
 }
 
 bool EulerBrickSearch::satisfiesAllConstraints(const mpz_int& a, const mpz_int& b, const mpz_int& c) const {
-    // Keep only the FASTEST, most essential constraints
+    // Fast essential constraints only
     
-    // Original simple constraint - one edge divisible by 17, 29, or 37
+    // 1. One edge divisible by 17, 29, or 37 (already mostly handled in main loop)
     if (!((a % 17 == 0) || (a % 29 == 0) || (a % 37 == 0) ||
           (b % 17 == 0) || (b % 29 == 0) || (b % 37 == 0) ||
           (c % 17 == 0) || (c % 29 == 0) || (c % 37 == 0))) {
         return false;
     }
+    
+    // 2. Must have factors 5, 7, 11, 19 somewhere
+    if (!((a % 5 == 0) || (b % 5 == 0) || (c % 5 == 0))) return false;
+    if (!((a % 7 == 0) || (b % 7 == 0) || (c % 7 == 0))) return false;
+    if (!((a % 11 == 0) || (b % 11 == 0) || (c % 11 == 0))) return false;
+    if (!((a % 19 == 0) || (b % 19 == 0) || (c % 19 == 0))) return false;
     
     return true;
 }
@@ -159,11 +165,29 @@ void EulerBrickSearch::searchRange(mpz_int start, mpz_int end, int thread_id) {
     long long total_combinations = 0;
     
     for (mpz_int a = start; a <= end; a++) {
+        // Early filter on 'a' - check if it has any required factors
+        bool a_has_factor = (a % 17 == 0) || (a % 29 == 0) || (a % 37 == 0) || (a % 5 == 0) || (a % 7 == 0) || (a % 11 == 0) || (a % 19 == 0);
+        
         for (mpz_int b = a + 1; b <= end + (end - start); b++) {
+            // Early filter on 'b' - if neither a nor b have factors, we can skip many 'c' values
+            bool b_has_factor = (b % 17 == 0) || (b % 29 == 0) || (b % 37 == 0) || (b % 5 == 0) || (b % 7 == 0) || (b % 11 == 0) || (b % 19 == 0);
+            
+            // If neither a nor b have ANY required factors, c MUST have specific factors
+            bool need_c_factors = !a_has_factor && !b_has_factor;
+            
             for (mpz_int c = b + 1; c <= end + 2*(end - start); c++) {
                 total_combinations++;
                 
-                // Apply fast constraint checking only
+                // Quick elimination: if a and b don't have factors, c must have 17/29/37 AND 5,7,11,19
+                if (need_c_factors) {
+                    bool c_has_required = ((c % 17 == 0) || (c % 29 == 0) || (c % 37 == 0)) && 
+                                         (c % 5 == 0) && (c % 7 == 0) && (c % 11 == 0) && (c % 19 == 0);
+                    if (!c_has_required) {
+                        continue;
+                    }
+                }
+                
+                // Apply remaining constraint checking
                 if (!isValidCandidate(a, b, c)) {
                     continue;
                 }
@@ -184,7 +208,7 @@ void EulerBrickSearch::searchRange(mpz_int start, mpz_int end, int thread_id) {
                     }
                 }
                 
-                // Progress reporting
+                // Progress reporting and checkpoint saving
                 if (total_combinations % 1000000 == 0) {
                     std::lock_guard<std::mutex> lock(progress_mutex);
                     if (thread_id == 0) {  // Only one thread reports progress
@@ -194,6 +218,11 @@ void EulerBrickSearch::searchRange(mpz_int start, mpz_int end, int thread_id) {
                                  << std::fixed << std::setprecision(2) << filter_efficiency 
                                  << "% filtered out), " << solutions_found.load() 
                                  << " solutions found" << std::endl;
+                        
+                        // Save checkpoint every 10 million combinations
+                        if (total_combinations % 10000000 == 0) {
+                            saveProgress(a, 0, "euler_progress.txt");
+                        }
                     }
                 }
             }
@@ -271,4 +300,56 @@ void EulerBrickSearch::saveSolutionsToFile(const std::string& filename) const {
     
     file.close();
     std::cout << "Solutions saved to: " << filename << std::endl;
+}
+
+// Checkpoint/resume functionality
+void EulerBrickSearch::saveProgress(mpz_int current_pos, int thread_count, const std::string& filename) const {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        file << "# Euler Brick Search Progress Checkpoint" << std::endl;
+        file << "search_start=" << search_start << std::endl;
+        file << "search_end=" << search_end << std::endl;
+        file << "current_position=" << current_pos << std::endl;
+        file << "thread_count=" << thread_count << std::endl;
+        file << "candidates_tested=" << candidates_tested.load() << std::endl;
+        file << "solutions_found=" << solutions_found.load() << std::endl;
+        file << "timestamp=" << time(nullptr) << std::endl;
+        file.close();
+        std::cout << "Progress saved to: " << filename << std::endl;
+    }
+}
+
+bool EulerBrickSearch::loadCheckpoint(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "No checkpoint file found: " << filename << std::endl;
+        return false;
+    }
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        
+        size_t pos = line.find('=');
+        if (pos == std::string::npos) continue;
+        
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
+        
+        if (key == "search_start") search_start = mpz_int(value);
+        else if (key == "search_end") search_end = mpz_int(value);
+        else if (key == "current_position") current_position = mpz_int(value);
+        else if (key == "candidates_tested") candidates_tested = std::stoll(value);
+        else if (key == "solutions_found") solutions_found = std::stoll(value);
+    }
+    
+    file.close();
+    std::cout << "Checkpoint loaded successfully!" << std::endl;
+    std::cout << "Resuming from position: " << current_position << std::endl;
+    std::cout << "Search range: " << search_start << " to " << search_end << std::endl;
+    return true;
+}
+
+void EulerBrickSearch::saveCheckpoint(const std::string& filename) const {
+    saveProgress(current_position, 0, filename);
 }

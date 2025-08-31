@@ -76,6 +76,11 @@ public:
     
     // Range management for threading
     bool getNextWorkRange(mpz_int& start, mpz_int& end, mpz_int range_size = 10000);
+    
+    // Checkpoint/resume functionality
+    void saveCheckpoint(const std::string& filename) const;
+    bool loadCheckpoint(const std::string& filename);
+    void saveProgress(mpz_int current_pos, int thread_count, const std::string& filename = "euler_progress.txt") const;
 };
 
 #endif // EULER_BRICK_SEARCH_H

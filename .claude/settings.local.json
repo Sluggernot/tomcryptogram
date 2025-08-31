@@ -6,7 +6,8 @@
       "Bash(./analyze_candidates)",
       "Bash(./csv_analysis)",
       "Bash(python3:*)",
-      "Bash(./large_scale_analyzer:*)"
+      "Bash(./large_scale_analyzer:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

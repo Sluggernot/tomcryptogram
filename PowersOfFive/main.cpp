@@ -2,8 +2,11 @@
 // Created by sluggernot on 3/17/25.
 //
 #include <iostream>
+#include <unordered_map>
 #include <boost/multiprecision/gmp.hpp>
 using namespace boost::multiprecision;
+
+std::unordered_map<mpz_int, mpz_int> fifthPowerCache;
 
 mpz_int toPowerOfFive(const mpz_int& incoming);
 mpz_int toPowerOfN(const mpz_int& incoming, const unsigned int N);
@@ -41,7 +44,13 @@ int main (int argc, const char * argv[]) {
 }
 
 mpz_int toPowerOfFive(const mpz_int& incoming) {
-  return incoming * incoming * incoming * incoming * incoming;
+  auto it = fifthPowerCache.find(incoming);
+  if (it != fifthPowerCache.end()) {
+    return it->second;
+  }
+  mpz_int result = incoming * incoming * incoming * incoming * incoming;
+  fifthPowerCache[incoming] = result;
+  return result;
 }
 
 bool searchMeeting(const mpz_int& target, const mpz_int& a, const mpz_int& b) {

@@ -7,9 +7,9 @@ Euler brick with edges a, b, c and face diagonals d, e, f along with space diago
 
 Exhaustive computer searches show that, if a perfect cuboid exists,
 
-    the odd edge must be greater than 2.5 × 1013,[6]
-    the smallest edge must be greater than 5×1011,[6] and
-    the space diagonal must be greater than 9 × 1015.[7]
+    the odd edge must be greater than 2.5 × 10 to the 13th power
+    the smallest edge must be greater than 5×10 to the 11th power
+    the space diagonal must be greater than 9 × 10 to the 15th power
 
 Some facts are known about properties that must be satisfied by a primitive perfect cuboid, if one exists, based on modular arithmetic:[8]
 
