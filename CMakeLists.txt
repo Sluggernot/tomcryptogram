@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_subdirectory(MagicSquares)
 add_subdirectory(PowersOfFive)
 add_subdirectory(EulerBrick)
+add_subdirectory(WeirdNumbers)
 
 #Weird. Couldnt name the exe the same as the folder.
 add_executable(EveryMapout EveryMap/main.cpp)
@@ -18,4 +19,5 @@ add_subdirectory(NoobyHabits)
 add_executable(MultiThreading MultiThreading/main.cpp)
 
 add_executable(TestFuncs TestFuncs/main.cpp)
+
 

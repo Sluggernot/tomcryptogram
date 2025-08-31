@@ -36,7 +36,14 @@ This connects to the broader study of generalized taxicab numbers Ta(n,k) where 
 
 ## Claude improvements to make
    [X] Add memoization/caching for fifth power calculations
-   [ ] Fix inefficient search bounds in findAnAlternativeWay inner loop
-   [ ] Improve breaking condition to break when aVal > target
-   [ ] Unify overlapping search spaces in searchMeeting and findAnAlternativeWay
-   [ ] Add modular arithmetic optimization to eliminate impossible candidates
+   [X] Fix inefficient search bounds in findAnAlternativeWay inner loop - Ended up being incorrect (slower)
+   [X] Improve breaking condition to break when aVal > target
+   [X] Unify overlapping search spaces in searchMeeting and findAnAlternativeWay
+
+## Performance notes
+   I suspected that the lookup into the hashmap would be a bottleneck, vs returning x*x*x*x*x.
+   With hashmap - 10,000 to 11,000 - 9m38s
+   Without hashmap - 10,000 to 11,000 - 9m46s
+   Extremely close.
+   There are still possibly memory constraints like we ran into for square of squares but we can easily go back to the old implementation if ever needed.
+
