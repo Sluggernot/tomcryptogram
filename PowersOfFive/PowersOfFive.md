@@ -33,3 +33,10 @@ This is the fifth-power variant of the famous Ramanujan taxicab number problem (
 
 ## Related Work
 This connects to the broader study of generalized taxicab numbers Ta(n,k) where k numbers are summed to the nth power in multiple ways.
+
+## Claude improvements to make
+   [X] Add memoization/caching for fifth power calculations
+   [ ] Fix inefficient search bounds in findAnAlternativeWay inner loop
+   [ ] Improve breaking condition to break when aVal > target
+   [ ] Unify overlapping search spaces in searchMeeting and findAnAlternativeWay
+   [ ] Add modular arithmetic optimization to eliminate impossible candidates

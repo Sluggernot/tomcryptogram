@@ -11,6 +11,7 @@ std::unordered_map<mpz_int, mpz_int> fifthPowerCache;
 mpz_int toPowerOfFive(const mpz_int& incoming);
 mpz_int toPowerOfN(const mpz_int& incoming, const unsigned int N);
 
+bool isPossibleTaxicabCandidate(const mpz_int& target);
 bool findAnAlternativeWay(const mpz_int& target, const mpz_int& a, const mpz_int& b);
 
 int main (int argc, const char * argv[]) {
@@ -29,7 +30,7 @@ int main (int argc, const char * argv[]) {
       mpz_i = toPowerOfFive(i);
       for (mpz_int j = i+1; j <= limit; ++j) {
         total = mpz_i+toPowerOfFive(j);
-        if (findAnAlternativeWay(total, i, j)) {
+        if (isPossibleTaxicabCandidate(total) && findAnAlternativeWay(total, i, j)) {
           std::cout << "Holy shit we've seen: " << total << " We're on: " << i << ' ' << j << std::endl;
           return 0;
         }
@@ -53,26 +54,25 @@ mpz_int toPowerOfFive(const mpz_int& incoming) {
   return result;
 }
 
-bool searchMeeting(const mpz_int& target, const mpz_int& a, const mpz_int& b) {
-  mpz_int aVal = 0;
-  for (mpz_int i = a-1; i >= b; --i) {
-    if (i == b) continue;
-    aVal = toPowerOfFive(i);
-    for (mpz_int j = b+1; j <= i; ++j) {
-      if (aVal + toPowerOfFive(j) == target) { std::cout << "FOUND A HIT!: " << i << " - " << j << std::endl; return true; }
-    }
-  }
-  return false;
+bool isPossibleTaxicabCandidate(const mpz_int& target) {
+  // Fifth powers modulo 7 can only be: 0, 1, 2, 4, 5, 6
+  // So sums of two fifth powers modulo 7 can only be certain values
+  // This eliminates many impossible candidates quickly
+  int targetMod7 = static_cast<int>(target % 7);
+  static const bool validMod7[] = {true, true, true, true, true, true, false};
+  return validMod7[targetMod7];
 }
 
 bool findAnAlternativeWay(const mpz_int& target, const mpz_int& a, const mpz_int& b) {
 
   mpz_int aVal = 0;
   mpz_int totalCheck = 0;
+  
+  // Forward search (i > a)
   for (mpz_int i = a+1; ; ++i) {
     if (i == b) continue;
     aVal = toPowerOfFive(i);
-    if (aVal > 2 * target) break;
+    if (aVal > target) break;
     for (mpz_int j = b-(i-a); j >= 0; --j) {
       totalCheck = aVal + toPowerOfFive(j);
       if (totalCheck > target) break;
@@ -80,7 +80,16 @@ bool findAnAlternativeWay(const mpz_int& target, const mpz_int& a, const mpz_int
     }
   }
 
-  return searchMeeting(target, a, b);
+  // Backward search (i < a) - unified from searchMeeting
+  for (mpz_int i = a-1; i >= b; --i) {
+    if (i == b) continue;
+    aVal = toPowerOfFive(i);
+    for (mpz_int j = b+1; j <= i; ++j) {
+      if (aVal + toPowerOfFive(j) == target) { std::cout << "FOUND A HIT!: " << i << " - " << j << std::endl; return true; }
+    }
+  }
+  
+  return false;
 }
 
 mpz_int toPowerOfN(const mpz_int& incoming, const unsigned int N) {
